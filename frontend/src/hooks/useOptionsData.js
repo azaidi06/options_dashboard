@@ -23,7 +23,7 @@ export function useTickers() {
     'options-tickers',
     fetchOptionsTickers,
     {
-      revalidateOnFocus: false,
+      revalidateOnFocus: true,
       dedupingInterval: 300000, // 5 minutes
     }
   );
@@ -60,7 +60,7 @@ export function useTickerDateRange(ticker) {
  */
 export function useOptionChain(ticker, date, expiration) {
   const { data, error, isLoading, mutate } = useSWR(
-    ticker && date ? [`option-chain-${ticker}`, date, expiration || ''] : null,
+    ticker && date ? [`option-chain-${ticker}`, date] : null,
     () => fetchOptionChain(ticker, date, expiration),
     {
       revalidateOnFocus: false,

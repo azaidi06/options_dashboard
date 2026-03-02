@@ -139,7 +139,7 @@ def get_iv_smile(
             "data": [{"strike": 95, "implied_volatility": 0.25}, ...]
         }
     """
-    df = options_utils.load_puts(ticker)
+    df = options_utils.load_puts(ticker, start_date=date, end_date=date)
     smile_df = options_utils.get_iv_smile_data(df, date, expiration)
 
     data = []

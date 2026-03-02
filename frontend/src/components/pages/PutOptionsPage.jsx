@@ -70,7 +70,11 @@ export function PutOptionsPage() {
                 setSelectedDate('');
                 setSelectedExpiration('');
               }}
-              options={tickers.tickers.map((t) => ({ value: t, label: t }))}
+              options={
+                tickers.tickers.length > 0
+                  ? tickers.tickers.map((t) => ({ value: t, label: t }))
+                  : [{ value: selectedTicker, label: selectedTicker }]
+              }
               disabled={tickers.loading}
             />
             <Input
