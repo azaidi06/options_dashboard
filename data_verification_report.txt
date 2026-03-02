@@ -1,0 +1,608 @@
+================================================================================
+WAR-MARKETS DATA VERIFICATION REPORT
+================================================================================
+File: /home/azaidi/Desktop/nonsense/fin/war-markets-react/src/data/warData.js
+Date: February 27, 2026
+
+This report cross-references every hardcoded value in warData.js against
+multiple authoritative financial sources.
+
+Legend:
+  CONFIRMED     = Matches authoritative sources exactly or within rounding
+  CLOSE ENOUGH  = Within a small margin that could reflect index choice
+                  (S&P vs Dow), measurement date differences, or rounding
+  QUESTIONABLE  = Cannot confirm; plausible but uncertain
+  WRONG         = Contradicted by multiple sources
+
+================================================================================
+1. S&P 500 DATA (sp500Data array)
+================================================================================
+
+--------------------------------------------------------------------------------
+1a. WWII (Pearl Harbor)
+    Our values: date="Dec 7, 1941", decline=20.3%, daysToBottom=127,
+                daysToRecover=917
+--------------------------------------------------------------------------------
+
+DATE: "Dec 7, 1941"
+  Verified: CONFIRMED
+  Pearl Harbor attack was December 7, 1941 (a Sunday). Markets opened Dec 8.
+  Sources: All historical sources confirm this date.
+
+DECLINE: 20.3%
+  Verified: CONFIRMED
+  The Dow closed at 116.60 on Dec 5, 1941 (last trading day before attack)
+  and bottomed at 92.92 on April 28, 1942.
+  Calculation: (116.60 - 92.92) / 116.60 = 20.31%
+  Multiple sources cite "-20.31%" or "almost 20%" drawdown.
+  Note: The S&P 500 (then the S&P 90 Composite) tracked similarly.
+  LPL Research cites -19.8%. ISABELNET cites -19.8%.
+  Sources: Benzinga, iSectors, Demauriac, Begin To Invest, Dividend.com
+  Verdict: CONFIRMED (20.3% matches Dow calculation exactly; LPL's 19.8%
+  is an S&P-specific figure)
+
+DAYS TO BOTTOM: 127
+  Verified: QUESTIONABLE (likely ~142 calendar days)
+  Bottom was April 28, 1942. Dec 7, 1941 to Apr 28, 1942 = 142 calendar days.
+  127 calendar days from Dec 7 = April 13, 1942 (about 2 weeks early).
+  If counting TRADING DAYS from Dec 8, 1941 to Apr 28, 1942, that would be
+  approximately 95-100 trading days.
+  ISABELNET data says 143 days to bottom, matching 142 calendar days.
+  Our value of 127 is ~15 days short of the actual calendar day count.
+  Verdict: QUESTIONABLE -- should be ~142-143, not 127. Off by ~15 days.
+
+DAYS TO RECOVER: 917
+  Verified: QUESTIONABLE
+  917 days from Dec 7, 1941 = June 11, 1944.
+  The Dow was at 119.40 at end of 1942 (already above 116.60 pre-Pearl Harbor
+  level). So the Dow recovered to its pre-Pearl Harbor close by late 1942
+  (~330 days).
+  However, the pre-WWII PEAK was 151.29 (April 8, 1940), not recovered until
+  Dec 29, 1944 (1118 days from Pearl Harbor).
+  917 days (June 1944) falls between these two interpretations.
+  This may be measuring the S&P composite's specific recovery, which could
+  differ from the Dow's timing. Hard to verify without daily S&P data.
+  LPL Research says recovery took 450+ days.
+  Verdict: QUESTIONABLE -- 917 seems too long if recovering to Dec 7 close,
+  too short if recovering to pre-war peak. Possibly S&P-specific timing.
+
+--------------------------------------------------------------------------------
+1b. Korean War
+    Our values: date="Jun 25, 1950", decline=12.0%, daysToBottom=18,
+                daysToRecover=60
+--------------------------------------------------------------------------------
+
+DATE: "Jun 25, 1950"
+  Verified: CONFIRMED
+  North Korea invaded South Korea on June 25, 1950.
+  Sources: All historical sources confirm this date.
+
+DECLINE: 12.0%
+  Verified: CONFIRMED
+  Multiple sources cite the Dow decline as -11.99%.
+  ISABELNET/LPL cite -12.9% for the S&P.
+  The S&P 500 fell 5.38% on the first day (Jun 26).
+  Our 12.0% aligns closely with the -11.99% Dow figure.
+  Sources: iSectors, Commonwealth, Demauriac, Invesco
+  Verdict: CONFIRMED (12.0% matches Dow's -11.99%; close to S&P's -12.9%)
+
+DAYS TO BOTTOM: 18
+  Verified: CONFIRMED
+  Bottom was July 13, 1950 (Dow at 197.46).
+  June 25 to July 13 = 18 calendar days. Exact match.
+  Sources describe "two and a half weeks" which matches 18 days precisely.
+  Sources: iSectors, Commonwealth, Demauriac
+  Verdict: CONFIRMED
+
+DAYS TO RECOVER: 60
+  Verified: CONFIRMED
+  Multiple sources state recovery took "just two months."
+  60 days = approximately 2 months. This aligns perfectly.
+  Sources: iSectors, Commonwealth, Demauriac
+  Verdict: CONFIRMED
+
+--------------------------------------------------------------------------------
+1c. Vietnam (Gulf of Tonkin)
+    Our values: date="Aug 7, 1964", decline=5.0%, daysToBottom=26,
+                daysToRecover=50
+--------------------------------------------------------------------------------
+
+DATE: "Aug 7, 1964"
+  Verified: CONFIRMED
+  The Gulf of Tonkin Resolution was passed by Congress on August 7, 1964.
+  The naval incident was August 2-4, 1964; the Resolution date is Aug 7.
+  Sources: Wikipedia, History.com, National Archives, Britannica
+  Verdict: CONFIRMED
+
+DECLINE: 5.0%
+  Verified: QUESTIONABLE -- CANNOT CONFIRM
+  No authoritative source found that specifically documents a 5% S&P 500
+  decline following the Gulf of Tonkin Resolution. The stock market in 1964
+  was in a bull market: S&P 500 was up over 16% for the full year.
+  The market reaction to the Gulf of Tonkin was relatively muted; there was
+  broad public support for the Resolution and markets did not panic.
+  Some sources cite a small, short-term decline but none confirm 5%.
+  Verdict: QUESTIONABLE -- cannot confirm or deny. Plausible but unverified.
+
+DAYS TO BOTTOM: 26
+  Verified: QUESTIONABLE -- CANNOT CONFIRM
+  No source found documenting specific days to bottom for this event.
+  Verdict: QUESTIONABLE -- cannot confirm or deny.
+
+DAYS TO RECOVER: 50
+  Verified: QUESTIONABLE -- CANNOT CONFIRM
+  No source found documenting specific recovery timeline for this event.
+  Verdict: QUESTIONABLE -- cannot confirm or deny.
+
+NOTE: The Gulf of Tonkin market reaction is poorly documented in financial
+literature compared to other war events. This may be because the market
+impact was minimal (1964 was a strong bull year), making it less noteworthy
+for financial analysts. The data could be derived from proprietary historical
+databases but cannot be verified through public sources.
+
+--------------------------------------------------------------------------------
+1d. Gulf War (Kuwait Invasion)
+    Our values: date="Aug 2, 1990", decline=17.0%, daysToBottom=67,
+                daysToRecover=136
+--------------------------------------------------------------------------------
+
+DATE: "Aug 2, 1990"
+  Verified: CONFIRMED
+  Iraq invaded Kuwait on August 2, 1990.
+  Sources: All sources confirm this date.
+  Verdict: CONFIRMED
+
+DECLINE: 17.0%
+  Verified: CLOSE ENOUGH
+  Multiple sources cite the decline differently depending on measurement:
+  - From Aug 2 close (351.48) to Oct 11 bottom (295.46) = 15.9%
+  - From Jul 16 peak (368.95) to Oct 11 bottom (295.46) = 19.9%
+  - Various sources cite "almost 17%", "17%", "13.5%", "18%", "18.38%"
+  Our 17.0% is in the middle of the range. LPL/ISABELNET cite 16.9%.
+  The -17% figure is widely cited and likely uses a slightly different
+  starting point than the Aug 2 close.
+  Sources: Yahoo Finance, iSectors, Demauriac, LPL Research, Seeking Alpha
+  Verdict: CLOSE ENOUGH (17% is widely cited; precise calc shows 15.9-19.9%
+  depending on start date. 16.9% per ISABELNET is closest match.)
+
+DAYS TO BOTTOM: 67
+  Verified: CLOSE ENOUGH
+  Aug 2 to Oct 11 = 70 calendar days.
+  LPL/ISABELNET cite 71 days to bottom.
+  Our value of 67 is 3-4 days short. Could reflect:
+  - Slight difference in start date (Aug 1 vs Aug 2)
+  - Counting trading days vs calendar days in some hybrid manner
+  - Using a slightly different bottom date
+  Sources: LPL Research, ISABELNET, Yardeni Research
+  Verdict: CLOSE ENOUGH (67 vs 70-71 actual; minor discrepancy)
+
+DAYS TO RECOVER: 136
+  Verified: QUESTIONABLE
+  Aug 2 + 136 days = December 16, 1990. But the market had NOT recovered
+  by mid-December 1990. The S&P was still well below its Aug 2 level.
+  Recovery to pre-invasion level occurred around Feb 11, 1991 (193 days
+  from Aug 2).
+  Possible interpretation: 136 TRADING days from Aug 2 ~ Feb 1991.
+  If 136 means days from BOTTOM (Oct 11) to recovery:
+  Oct 11 + 136 = Feb 24, 1991, close to actual recovery of ~Feb 11.
+  Verdict: QUESTIONABLE -- if measured from event date, it is wrong
+  (should be ~193). If measured from bottom date, approximately correct
+  (~123-136 days from Oct 11 to Feb recovery).
+
+--------------------------------------------------------------------------------
+1e. 9/11 / Afghanistan
+    Our values: date="Sep 11, 2001", decline=11.6%, daysToBottom=10,
+                daysToRecover=75
+--------------------------------------------------------------------------------
+
+DATE: "Sep 11, 2001"
+  Verified: CONFIRMED
+  The September 11 terrorist attacks occurred on September 11, 2001.
+  Markets were closed Sep 11-14, reopened Sep 17.
+  Sources: All sources confirm.
+  Verdict: CONFIRMED
+
+DECLINE: 11.6%
+  Verified: CONFIRMED
+  The S&P 500 finished the first week of trading (Sep 17-21) down 11.6%.
+  This is one of the most widely cited and consistent figures across sources.
+  Pre-close (Sep 10): 1,092.54. Week-end close (Sep 21): ~965.
+  Sources: CNN Money, CNBC, Money.com, BIS, iSectors, LPL, Demauriac,
+           Bullrunim, 911Timeline.net
+  Verdict: CONFIRMED
+
+DAYS TO BOTTOM: 10
+  Verified: CONFIRMED
+  Sep 11 to Sep 21 = 10 calendar days. Only 5 trading days occurred
+  (Sep 17-21) since markets were closed Sep 11-14.
+  Sources: Multiple confirm Sep 21 as the bottom.
+  Verdict: CONFIRMED
+
+DAYS TO RECOVER: 75
+  Verified: QUESTIONABLE
+  Sources consistently say recovery occurred "within one month" or
+  "by the one-month anniversary" (Oct 11, 2001 = 30 calendar days).
+  Bullrunim specifically cites 31 days to recovery.
+  75 days from Sep 11 = November 25, 2001.
+  However, the S&P 500 had a complex post-9/11 trajectory: it recovered
+  briefly in October but then declined again in the broader dot-com bear
+  market context. The S&P hit ~1100 in early October but may not have
+  sustainably held above 1092 until later.
+  75 days could represent a more sustained/permanent recovery, while
+  the "1 month" figure represents the first crossing above pre-9/11 levels.
+  Sources: Money.com, Bullrunim, CNBC
+  Verdict: QUESTIONABLE -- 30-31 days is widely cited for initial recovery.
+  75 days may represent a more conservative "sustained recovery" measure.
+
+--------------------------------------------------------------------------------
+1f. Iraq War
+    Our values: date="Mar 19, 2003", decline=14.7%, daysToBottom=90,
+                daysToRecover=180
+--------------------------------------------------------------------------------
+
+DATE: "Mar 19, 2003"
+  Verified: CONFIRMED
+  The Iraq War began with "shock and awe" on March 19-20, 2003 (US time
+  evening of Mar 19 / Baghdad time Mar 20).
+  Sources: All sources confirm.
+  Verdict: CONFIRMED
+
+DECLINE: 14.7%
+  Verified: WRONG (in context)
+  The -14.71% figure is real but represents the pre-war BUILDUP decline from
+  December 2002 to March 2003, NOT the decline after the invasion started.
+  After the invasion began (Mar 19), the S&P only fell 5.3% over 7 trading
+  days before recovering in 16 days.
+  Using this as "the war's decline" is misleading because:
+  - The market RALLIED once the invasion started
+  - The 14.7% measures the uncertainty BEFORE the war, not the war itself
+  Sources: Chase de Vere, Hennion Walsh, Demauriac
+  Verdict: WRONG in context. The 14.7% is the pre-invasion buildup decline,
+  not the post-invasion market reaction. Actual post-invasion decline was
+  only ~5.3%.
+
+DAYS TO BOTTOM: 90
+  Verified: WRONG
+  If measuring from March 19 forward, the market did NOT decline for 90 days.
+  It declined for ~7 trading days then rallied strongly.
+  If measuring the pre-war buildup backwards, Dec 19, 2002 is ~90 days
+  before Mar 19, which matches when the buildup decline started.
+  But "days to bottom" should measure from the event forward, not backward.
+  The actual bottom from the invasion date was ~7 trading days (~10 calendar
+  days) after March 19.
+  Sources: Chase de Vere, Hennion Walsh
+  Verdict: WRONG -- market bottomed ~7-10 days after invasion, not 90.
+
+DAYS TO RECOVER: 180
+  Verified: WRONG (in original context)
+  If the invasion-triggered decline was 5.3% and recovered in 16 days,
+  then 180 days is grossly overstated for post-invasion recovery.
+  If measuring recovery from the pre-war buildup decline (starting Dec 2002),
+  the market did take several months to recover to Dec 2002 levels, but
+  this conflates multiple market dynamics (dot-com aftermath + Iraq War).
+  Sources: Chase de Vere
+  Verdict: WRONG in the context of a post-invasion recovery timeline.
+
+
+================================================================================
+2. NASDAQ DATA (nasdaqData array)
+================================================================================
+
+--------------------------------------------------------------------------------
+2a. NASDAQ -- Gulf War (Kuwait)
+    Our values: date="Aug 2, 1990", decline=24.1%, daysToBottom=75,
+                daysToRecover=187, preClose=428.90, bottomClose=325.40
+--------------------------------------------------------------------------------
+
+DATE: "Aug 2, 1990"
+  Verified: CONFIRMED (same as S&P; Iraq invaded Kuwait Aug 2, 1990)
+
+DECLINE: 24.1%
+  Verified: CLOSE ENOUGH
+  Calculation: (428.90 - 325.40) / 428.90 = 24.13%. Math is consistent.
+  The NASDAQ was more volatile than the S&P during this period, so a larger
+  decline (24% vs 17%) is plausible. Could not find independent NASDAQ-
+  specific percentage from authoritative sources, but math checks out.
+  Verdict: CLOSE ENOUGH -- internally consistent and plausible.
+
+DAYS TO BOTTOM: 75
+  Verified: QUESTIONABLE
+  S&P bottomed Oct 11, 1990 (70 days from Aug 2). NASDAQ may have bottomed
+  a few days later. Aug 2 + 75 = Oct 16, 1990. Plausible.
+  Verdict: QUESTIONABLE -- plausible but unverified.
+
+DAYS TO RECOVER: 187
+  Verified: QUESTIONABLE
+  Aug 2 + 187 = Feb 5, 1991. Close to S&P recovery (~Feb 11, 1991).
+  Plausible that NASDAQ recovered slightly earlier.
+  Verdict: QUESTIONABLE -- plausible but unverified.
+
+PRE-CLOSE: 428.90
+  Verified: QUESTIONABLE
+  This would be the NASDAQ Composite close on August 1, 1990. Could not
+  find this specific value in search results. NASDAQ was in the ~430 range
+  during mid-1990. Plausible.
+  Verdict: QUESTIONABLE -- plausible but unverified via public sources.
+
+BOTTOM CLOSE: 325.40
+  Verified: QUESTIONABLE
+  (428.90 - 325.40) / 428.90 = 24.13%, consistent with decline figure.
+  Could not find this specific value in search results.
+  Verdict: QUESTIONABLE -- internally consistent but unverified.
+
+--------------------------------------------------------------------------------
+2b. NASDAQ -- 9/11 / Afghanistan
+    Our values: date="Sep 10, 2001", decline=16.1%, daysToBottom=11,
+                daysToRecover=31, preClose=1695.38, bottomClose=1423.19
+--------------------------------------------------------------------------------
+
+NOTE: The NASDAQ data uses "Sep 10, 2001" as the date (last trading day
+before attacks), while the S&P data uses "Sep 11, 2001". This is an
+inconsistency in the dataset, though both are defensible choices.
+
+DATE: "Sep 10, 2001"
+  Verified: CLOSE ENOUGH (but inconsistent with S&P entry)
+  Sep 10 was the last trading day before the attacks.
+  Verdict: CLOSE ENOUGH (note inconsistency with S&P which uses Sep 11)
+
+DECLINE: 16.1%
+  Verified: CONFIRMED
+  Multiple sources confirm the NASDAQ dropped approximately 16% in the
+  first week of trading after 9/11.
+  Calculation: (1695.38 - 1423.19) / 1695.38 = 16.05%. Matches.
+  Sources: CNBC, Boston Fed 2001 Review
+  Verdict: CONFIRMED
+
+DAYS TO BOTTOM: 11
+  Verified: CONFIRMED
+  Sep 10 to Sep 21 = 11 calendar days.
+  Sep 21, 2001 is confirmed as the market bottom across all sources.
+  Verdict: CONFIRMED
+
+DAYS TO RECOVER: 31
+  Verified: CLOSE ENOUGH
+  Sep 10 + 31 = Oct 11, 2001. Aligns with widely cited "one month."
+  Bullrunim specifically cites 31 days for S&P recovery.
+  Sources: Money.com, Bullrunim, CNBC
+  Verdict: CLOSE ENOUGH
+
+PRE-CLOSE: 1695.38
+  Verified: CLOSE ENOUGH
+  On Sep 17, NASDAQ fell 6.83% to 1,579.55.
+  Working backward: 1579.55 / (1 - 0.0683) = ~1695.22. Close to 1695.38.
+  Sources: CNN Money (first-day drop data)
+  Verdict: CLOSE ENOUGH -- consistent with derived calculations.
+
+BOTTOM CLOSE: 1423.19
+  Verified: CLOSE ENOUGH
+  16% decline from 1695.38 = 1424.12, very close to 1423.19.
+  Sep 21 is confirmed as the post-9/11 bottom.
+  Verdict: CLOSE ENOUGH -- internally consistent and plausible.
+
+--------------------------------------------------------------------------------
+2c. NASDAQ -- Iraq War
+    Our values: date="Mar 19, 2003", decline=4.0%, daysToBottom=12,
+                daysToRecover=29, preClose=1397.07, bottomClose=1341.17
+--------------------------------------------------------------------------------
+
+DATE: "Mar 19, 2003"
+  Verified: CONFIRMED (same as S&P entry)
+
+DECLINE: 4.0%
+  Verified: CLOSE ENOUGH
+  Calculation: (1397.07 - 1341.17) / 1397.07 = 4.0%. Math checks out.
+  S&P declined 5.3% over 7 trading days. A 4% NASDAQ decline is plausible.
+  Note this is much more reasonable than the S&P entry's 14.7%.
+  Verdict: CLOSE ENOUGH -- plausible post-invasion decline figure.
+
+DAYS TO BOTTOM: 12
+  Verified: CLOSE ENOUGH
+  S&P took 7 trading days (~10 calendar days) to bottom. 12 calendar days
+  is in the right ballpark.
+  Verdict: CLOSE ENOUGH
+
+DAYS TO RECOVER: 29
+  Verified: CLOSE ENOUGH
+  S&P took 16 trading days to recover. 29 calendar days is ~20 trading
+  days, in the same ballpark.
+  Verdict: CLOSE ENOUGH
+
+PRE-CLOSE: 1397.07
+  Verified: QUESTIONABLE
+  NASDAQ was in the ~1400 range in mid-March 2003. Plausible.
+  Verdict: QUESTIONABLE -- plausible but unverified.
+
+BOTTOM CLOSE: 1341.17
+  Verified: QUESTIONABLE
+  (1397.07 - 1341.17) / 1397.07 = 4.0%. Internally consistent.
+  Verdict: QUESTIONABLE -- internally consistent but unverified.
+
+
+================================================================================
+3. OTHER ISSUES FOUND
+================================================================================
+
+INCONSISTENCY: 9/11 DATE
+  The S&P entry uses date="Sep 11, 2001"
+  The NASDAQ entry uses date="Sep 10, 2001"
+  These should ideally use the same reference date.
+
+IRAQ WAR S&P DATA IS PROBLEMATIC:
+  The S&P Iraq War entry (decline=14.7%, daysToBottom=90, daysToRecover=180)
+  appears to conflate the pre-invasion buildup decline (Dec 2002 - Mar 2003)
+  with the post-invasion market reaction. This is inconsistent with:
+  - All other entries which measure decline AFTER the event
+  - The NASDAQ Iraq War entry which correctly shows post-invasion reaction
+    (decline=4.0%, daysToBottom=12, daysToRecover=29)
+
+
+================================================================================
+4. SUMMARY TABLE
+================================================================================
+
+S&P 500 DATA:
++------------------+----------+-----------+----------+---------------+
+| Conflict         | Field    | Our Value | Verified | Status        |
++------------------+----------+-----------+----------+---------------+
+| WWII             | date     | Dec 7 '41 | Dec 7'41 | CONFIRMED    |
+|                  | decline  | 20.3%     | 19.8-20.3| CONFIRMED    |
+|                  | daysBot  | 127       | 142-143  | QUESTIONABLE |
+|                  | daysRec  | 917       | unclear  | QUESTIONABLE |
++------------------+----------+-----------+----------+---------------+
+| Korean War       | date     | Jun 25'50 | Jun 25   | CONFIRMED    |
+|                  | decline  | 12.0%     |11.99-12.9| CONFIRMED    |
+|                  | daysBot  | 18        | 18       | CONFIRMED    |
+|                  | daysRec  | 60        | ~60      | CONFIRMED    |
++------------------+----------+-----------+----------+---------------+
+| Vietnam/Tonkin   | date     | Aug 7 '64 | Aug 7'64 | CONFIRMED    |
+|                  | decline  | 5.0%      | N/A      | QUESTIONABLE |
+|                  | daysBot  | 26        | N/A      | QUESTIONABLE |
+|                  | daysRec  | 50        | N/A      | QUESTIONABLE |
++------------------+----------+-----------+----------+---------------+
+| Gulf War         | date     | Aug 2 '90 | Aug 2'90 | CONFIRMED    |
+|                  | decline  | 17.0%     | 15.9-19.9| CLOSE ENOUGH |
+|                  | daysBot  | 67        | 70-71    | CLOSE ENOUGH |
+|                  | daysRec  | 136       | 123-193* | QUESTIONABLE |
++------------------+----------+-----------+----------+---------------+
+| 9/11             | date     | Sep 11'01 | Sep 11   | CONFIRMED    |
+|                  | decline  | 11.6%     | 11.6%    | CONFIRMED    |
+|                  | daysBot  | 10        | 10       | CONFIRMED    |
+|                  | daysRec  | 75        | 30-31*   | QUESTIONABLE |
++------------------+----------+-----------+----------+---------------+
+| Iraq War         | date     | Mar 19'03 | Mar 19   | CONFIRMED    |
+|                  | decline  | 14.7%     | 5.3%**   | WRONG        |
+|                  | daysBot  | 90        | 7-10**   | WRONG        |
+|                  | daysRec  | 180       | 16**     | WRONG        |
++------------------+----------+-----------+----------+---------------+
+
+* Recovery time depends on measurement methodology
+** S&P Iraq War entry conflates pre-war buildup with post-invasion reaction
+
+NASDAQ DATA:
++------------------+----------+-----------+----------+--------------+
+| Conflict         | Field    | Our Value | Verified | Status       |
++------------------+----------+-----------+----------+--------------+
+| Gulf War         | date     | Aug 2 '90 | Aug 2'90 | CONFIRMED   |
+|                  | decline  | 24.1%     | internal | CLOSE ENOUGH |
+|                  | daysBot  | 75        | ~70-75   | QUESTIONABLE |
+|                  | daysRec  | 187       | ~190     | QUESTIONABLE |
+|                  | preClose | 428.90    | ~430     | QUESTIONABLE |
+|                  | botClose | 325.40    | N/A      | QUESTIONABLE |
++------------------+----------+-----------+----------+--------------+
+| 9/11             | date     | Sep 10'01 | Sep 10   | CONFIRMED*  |
+|                  | decline  | 16.1%     | ~16%     | CONFIRMED   |
+|                  | daysBot  | 11        | 11       | CONFIRMED   |
+|                  | daysRec  | 31        | ~30-31   | CONFIRMED   |
+|                  | preClose | 1695.38   | ~1695    | CLOSE ENOUGH |
+|                  | botClose | 1423.19   | ~1424    | CLOSE ENOUGH |
++------------------+----------+-----------+----------+--------------+
+| Iraq War         | date     | Mar 19'03 | Mar 19   | CONFIRMED   |
+|                  | decline  | 4.0%      | ~4-5%    | CLOSE ENOUGH |
+|                  | daysBot  | 12        | ~10-12   | CLOSE ENOUGH |
+|                  | daysRec  | 29        | ~20-30   | CLOSE ENOUGH |
+|                  | preClose | 1397.07   | ~1400    | QUESTIONABLE |
+|                  | botClose | 1341.17   | N/A      | QUESTIONABLE |
++------------------+----------+-----------+----------+--------------+
+
+* 9/11 date is Sep 10 in NASDAQ but Sep 11 in S&P (inconsistent)
+
+
+================================================================================
+5. RECOMMENDATIONS
+================================================================================
+
+HIGH PRIORITY FIXES:
+
+1. S&P Iraq War entry (decline, daysToBottom, daysToRecover):
+   The current values (14.7%, 90 days, 180 days) measure the PRE-WAR
+   buildup decline, not the post-invasion market reaction. Either:
+   a) Change to post-invasion values (~5.3% decline, ~10 days to bottom,
+      ~16-25 days to recovery)
+   b) Add a note/label clarifying this measures the pre-war buildup period.
+
+2. WWII daysToBottom (127 vs ~142):
+   Consider updating to 142-143 to match the actual calendar days from
+   Dec 7, 1941 to April 28, 1942 (confirmed bottom date).
+
+MEDIUM PRIORITY:
+
+3. 9/11 date inconsistency between S&P (Sep 11) and NASDAQ (Sep 10):
+   Standardize to one or the other.
+
+4. 9/11 daysToRecover for S&P (75 days):
+   This is significantly higher than the widely cited "~30 days" figure.
+   May need clarification or revision.
+
+5. Gulf War daysToRecover for S&P (136 days):
+   Unclear measurement basis. If from event date, should be ~193 days.
+   If from bottom, ~123 days. 136 does not cleanly match either.
+
+LOW PRIORITY:
+
+6. Vietnam/Gulf of Tonkin data (all fields except date):
+   Cannot be verified through public sources. May be accurate but
+   sourcing should be documented.
+
+7. NASDAQ Gulf War specific close values (428.90, 325.40):
+   Internally consistent but not independently verified.
+
+
+================================================================================
+6. SOURCES CONSULTED
+================================================================================
+
+Financial Research and Analysis:
+- LPL Research: "How Do Geopolitical Shocks Affect Stock Markets?"
+  https://www.lpl.com/research/blog/middle-east-conflict-how-stocks-react-to-geopolitical-shock.html
+- ISABELNET: "S&P 500 Drawdown - Geopolitical Events"
+  https://www.isabelnet.com/sp-500-drawdown-geopolitical-events-and-stock-market-reactions/
+- Bullrunim: "Markets and Geopolitical Events: What the Data Shows"
+  https://www.bullrunim.com/insights/market-volatility-and-geopolitical-events-what-the-data-actually-shows
+- First Trust: "Wars, Geopolitical Shocks & the Stock Market"
+  https://www.ftportfolios.com/Commentary/Insights/2024/4/8/wars-geopolitical-shocks--the-stock-market-client-resource-kit---first-quarter-2024
+- Hartford Funds: "Military Conflicts May Rattle Markets"
+  https://www.hartfordfunds.com/practice-management/client-conversations/managing-volatility/military-conflicts-may-rattle-markets-but-not-for-long.html
+- Hennion and Walsh: "Stock Market Reactions to War"
+  https://www.hennionandwalsh.com/insights/stock-market-reactions-to-war-and-terrorist-attacks-a-historical-analysis/
+- Chase de Vere: "How conflicts and war affect stock markets?"
+  https://chasedevere.co.uk/2022/03/03/how-conflicts-and-war-affect-stock-markets/
+- Demauriac: "Analyzing U.S. Stock Market Performance"
+  https://demauriac.com/knowledge-center/analyzing-us-stock-market-performance-through-the-tumultuous-waters-of-war-what-history-reveals
+
+Historical Market Data:
+- iSectors: "Stock Markets in Times of Uncertainty"
+  https://www.isectors.com/blog/stock-markets-times-uncertainty
+- Begin To Invest: "December 7th/8th - Stock Market History"
+  https://www.begintoinvest.com/december-7/
+- Benzinga: "Market Reacted To Pearl Harbor 75 Years Ago"
+  https://www.benzinga.com/general/education/16/12/8780102
+- Yardeni Research: Stock Market Historical Tables
+  https://yardeni.com/wp-content/uploads/BullBearTables.pdf
+- Fiendbear.com: "Dow Industrials: 1939-1942 Bear Market"
+  https://www.fiendbear.com/bear1939.htm
+
+9/11 Sources:
+- CNN Money: "Brutal week on Wall St." (Sep 21, 2001)
+  https://money.cnn.com/2001/09/21/markets/markets_newyork/
+- Money.com: "9/11 Shut Down the Stock Market"
+  https://money.com/investing-lessons-from-9-11/
+- Boston Fed: 2001 Stock Market Report
+  https://www.bostonfed.org/-/media/Documents/stock-market-report/smrye2001.pdf
+
+Gulf War / Iraq War:
+- Yahoo Finance: "Lessons from the last war"
+  https://finance.yahoo.com/news/lessons-from-iraq-kuwait-invasion-225924707.html
+- TrendSpider: "The Gulf War Recession (1990-1991)"
+  https://trendspider.com/learning-center/the-gulf-war-recession-1990-1991/
+- NBER: "What Do Financial Markets Think of War in Iraq?"
+  https://www.nber.org/system/files/working_papers/w9587/w9587.pdf
+
+Academic:
+- AAII: "Stock Market Returns Following Military Conflicts"
+  https://www.aaii.com/investor-update/article/16252-stock-market-returns-following-military-conflicts
+- Yahoo Finance: "20 Geopolitical Events with Highest Impact on S&P 500"
+  https://finance.yahoo.com/news/20-geopolitical-events-highest-impact-211037361.html
+
+================================================================================
+END OF REPORT
+================================================================================

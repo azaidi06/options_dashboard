@@ -1,0 +1,17 @@
+{
+  "name": "options-dashboard",
+  "instance_id": "i-0709f69d141f8d891",
+  "elastic_ip": "98.94.234.0",
+  "allocation_id": "eipalloc-089448c0d3f465f20",
+  "security_group_id": "sg-0acf59e0b267976e8",
+  "region": "us-east-1",
+  "instance_type": "t3.small",
+  "ssh_command": "ssh -i options_dashboard.pem ubuntu@98.94.234.0",
+  "next_steps": [
+    "1. SSH into instance: ssh -i options_dashboard.pem ubuntu@98.94.234.0",
+    "2. Clone your repository: git clone https://github.com/YOUR_USERNAME/fin.git",
+    "3. Run setup script: cd fin && bash ec2_setup.sh",
+    "4. Set up domain at https://www.duckdns.org",
+    "5. Install SSL: sudo apt install certbot python3-certbot-nginx -y && sudo certbot --nginx -d yourdomain.duckdns.org"
+  ]
+}

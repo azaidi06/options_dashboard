@@ -1,0 +1,39 @@
+# Virtual environments
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Data (too large for GitHub)
+data/
+options_data/
+*.parquet
+*.csv
+
+# Streamlit
+.streamlit/
+
+# Logs
+logs/
+*.log
+
+# OS / IDE
+.DS_Store
+node_modules/
+
+# Environment
+.env
+.env.local
+
+# Generated
+plot.html
+package-lock.json
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Screenshots
+*.png
