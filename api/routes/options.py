@@ -92,7 +92,7 @@ async def get_smile(
         raise HTTPException(status_code=500, detail=f"Error getting IV smile: {str(e)}")
 
 
-@router.post("/payoff")
+@router.get("/payoff")
 async def payoff_diagram(
     strike: float = Query(..., description="Strike price"),
     premium: float = Query(..., description="Premium paid per share"),

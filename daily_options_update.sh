@@ -13,6 +13,11 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_DIR="${SCRIPT_DIR}/logs"
 DATE_STAMP=$(date +%Y-%m-%d)
+
+# Load API key from .env if not already set
+if [[ -z "${ALPHAVANTAGE_API_KEY:-}" ]] && [[ -f "${SCRIPT_DIR}/.env" ]]; then
+    export ALPHAVANTAGE_API_KEY="$(grep -m1 '^ALPHAVANTAGE_API_KEY=' "${SCRIPT_DIR}/.env" | cut -d= -f2-)"
+fi
 LOG_FILE="${LOG_DIR}/daily_options_${DATE_STAMP}.log"
 
 PYTHON="${SCRIPT_DIR}/.venv/bin/python"
@@ -54,12 +59,15 @@ mkdir -p "$LOG_DIR"
     for TICKER in "${TICKERS[@]}"; do
         echo "--- ${TICKER} ---"
 
+        # Use 14-day start window so we catch any missed days without going back to IPO
+        START_DATE=$(date -d "14 days ago" +%Y-%m-%d 2>/dev/null || date -v-14d +%Y-%m-%d)
+
         if $DRY_RUN; then
-            echo "  [dry-run] would run: ${PYTHON} backfill_ticker_options.py ${TICKER} --fetch --merge --limit ${LIMIT}"
+            echo "  [dry-run] would run: ${PYTHON} backfill_ticker_options.py ${TICKER} --start ${START_DATE} --fetch --merge --limit ${LIMIT}"
             SKIP=$((SKIP + 1))
         else
             TOTAL=$((TOTAL + 1))
-            if "$PYTHON" "${SCRIPT_DIR}/backfill_ticker_options.py" "$TICKER" --fetch --merge --limit "$LIMIT"; then
+            if "$PYTHON" "${SCRIPT_DIR}/backfill_ticker_options.py" "$TICKER" --start "$START_DATE" --fetch --merge --limit "$LIMIT"; then
                 PASS=$((PASS + 1))
             else
                 echo "  WARNING: ${TICKER} failed (exit $?)"

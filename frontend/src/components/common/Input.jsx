@@ -1,6 +1,7 @@
 /**
- * Input component
+ * Input and Select components - dark theme
  */
+
 export function Input({
   label,
   value,
@@ -8,6 +9,7 @@ export function Input({
   type = 'text',
   placeholder = '',
   className = '',
+  disabled = false,
   ...props
 }) {
   return (
@@ -18,22 +20,21 @@ export function Input({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="input"
+        disabled={disabled}
+        className={`input ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         {...props}
       />
     </div>
   );
 }
 
-/**
- * Select component
- */
 export function Select({
   label,
   value,
   onChange,
-  options,
+  options = [],
   className = '',
+  disabled = false,
   ...props
 }) {
   return (
@@ -42,7 +43,8 @@ export function Select({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="input"
+        disabled={disabled}
+        className={`input ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         {...props}
       >
         {options.map((option) => (

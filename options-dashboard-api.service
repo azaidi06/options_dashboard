@@ -4,11 +4,11 @@ After=network.target
 Wants=options-dashboard-nginx.service
 
 [Service]
-Type=notify
+Type=simple
 User=ubuntu
 WorkingDirectory=/home/ubuntu/options_dashboard
 Environment="PATH=/home/ubuntu/options_dashboard/.venv/bin"
-ExecStart=/home/ubuntu/options_dashboard/.venv/bin/python -m uvicorn api.main:app --host 127.0.0.1 --port 8000 --workers 4
+ExecStart=/home/ubuntu/options_dashboard/.venv/bin/python -m uvicorn api.main:app --host 127.0.0.1 --port 8000 --workers 2
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=process
 Restart=always
@@ -18,7 +18,7 @@ RestartSec=10
 PrivateTmp=true
 NoNewPrivileges=true
 ProtectSystem=strict
-ProtectHome=yes
+ProtectHome=read-only
 ReadWritePaths=/home/ubuntu/options_dashboard/data /home/ubuntu/options_dashboard/options_data /home/ubuntu/options_dashboard/logs
 
 [Install]

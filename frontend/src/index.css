@@ -1,57 +1,316 @@
 @import "tailwindcss";
 
+/* ─── Custom Font ─── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ─── Base ─── */
 body {
-  @apply bg-gray-50 text-gray-900;
+  @apply bg-slate-950 text-slate-100;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-slate-900;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-700 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-600;
+}
+
+/* ─── Cards ─── */
 .card {
-  @apply bg-white rounded-lg shadow-md p-4;
+  @apply bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-xl p-4;
 }
 
 .card-lg {
-  @apply bg-white rounded-lg shadow-md p-6;
+  @apply bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-xl p-6;
 }
 
+.card-glass {
+  @apply bg-slate-800/50 backdrop-blur-md border border-slate-700/50 rounded-xl;
+}
+
+/* ─── Buttons ─── */
 .btn {
-  @apply px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium;
+  @apply px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500
+         transition-all duration-200 font-semibold cursor-pointer
+         shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40
+         hover:-translate-y-px active:translate-y-0;
 }
 
 .btn-secondary {
-  @apply px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 transition-colors font-medium;
+  @apply px-5 py-2.5 bg-slate-800 text-slate-200 rounded-lg hover:bg-slate-700
+         transition-all duration-200 font-medium cursor-pointer
+         border border-slate-700 hover:border-slate-600;
 }
 
+.btn-ghost {
+  @apply px-4 py-2 text-slate-400 rounded-lg hover:text-slate-200 hover:bg-slate-800/50
+         transition-all duration-200 font-medium cursor-pointer;
+}
+
+/* ─── Inputs ─── */
 .input {
-  @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500;
+  @apply w-full px-3 py-2.5 border border-slate-700 rounded-lg
+         focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500
+         bg-slate-800/80 text-slate-100 placeholder-slate-500
+         transition-all duration-200;
+}
+
+select.input option {
+  background-color: #1e293b;
+  color: #e2e8f0;
+}
+
+/* Date input icon color for dark mode */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
 }
 
 .label {
-  @apply block text-sm font-medium text-gray-700 mb-1;
+  @apply block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5;
 }
 
+/* ─── Tabs (pill style) ─── */
 .tab-button {
-  @apply px-4 py-2 font-medium text-gray-700 border-b-2 border-transparent hover:border-blue-500 transition-colors cursor-pointer;
+  @apply px-4 py-2 font-semibold text-sm text-slate-400 rounded-lg
+         hover:text-slate-200 hover:bg-slate-800/50
+         transition-all duration-200 cursor-pointer;
 }
 
 .tab-button.active {
-  @apply border-blue-600 text-blue-600;
+  @apply bg-indigo-600/20 text-indigo-400 ring-1 ring-indigo-500/30;
 }
 
+/* ─── Metric Cards ─── */
 .metric-card {
-  @apply bg-gray-100 rounded p-4;
+  @apply bg-slate-900/60 border border-slate-800 rounded-xl p-5
+         hover:border-slate-700 transition-all duration-200;
 }
 
 .metric-value {
-  @apply text-2xl font-bold text-gray-900;
+  @apply text-2xl font-bold text-slate-50 tabular-nums tracking-tight;
 }
 
 .metric-label {
-  @apply text-sm text-gray-600;
+  @apply text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2;
 }
 
+/* ─── Tables ─── */
+.data-table {
+  @apply w-full text-sm;
+}
+
+.data-table thead {
+  @apply bg-slate-800/50;
+}
+
+.data-table th {
+  @apply px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider
+         border-b border-slate-700;
+}
+
+.data-table td {
+  @apply px-3 py-2.5 text-slate-300 border-b border-slate-800/50;
+}
+
+.data-table tbody tr {
+  @apply hover:bg-slate-800/30 transition-colors;
+}
+
+/* ─── Recharts Overrides ─── */
 .recharts-cartesian-axis-tick text {
-  @apply text-xs text-gray-600;
+  fill: #94a3b8 !important;
+  font-size: 11px !important;
 }
 
 .recharts-legend-wrapper {
   @apply text-xs;
+}
+
+.recharts-legend-item-text {
+  color: #cbd5e1 !important;
+}
+
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  @apply bg-slate-800/95 border-slate-700 rounded-lg shadow-xl;
+  backdrop-filter: blur(8px);
+}
+
+.recharts-default-tooltip .recharts-tooltip-label {
+  color: #e2e8f0 !important;
+  font-weight: 600 !important;
+}
+
+.recharts-default-tooltip .recharts-tooltip-item {
+  color: #cbd5e1 !important;
+}
+
+.recharts-cartesian-grid line {
+  stroke: #1e293b !important;
+}
+
+.recharts-reference-line line {
+  stroke-opacity: 0.5;
+}
+
+/* ─── Badges ─── */
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+}
+
+.badge-green {
+  @apply bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/20;
+}
+
+.badge-red {
+  @apply bg-red-500/15 text-red-400 ring-1 ring-red-500/20;
+}
+
+.badge-yellow {
+  @apply bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/20;
+}
+
+.badge-blue {
+  @apply bg-blue-500/15 text-blue-400 ring-1 ring-blue-500/20;
+}
+
+.badge-indigo {
+  @apply bg-indigo-500/15 text-indigo-400 ring-1 ring-indigo-500/20;
+}
+
+/* ─── Info / Warning / Error boxes ─── */
+.info-box {
+  @apply bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-5 text-slate-300;
+}
+
+.warning-box {
+  @apply bg-amber-500/10 border border-amber-500/20 rounded-xl p-5 text-slate-300;
+}
+
+.error-box {
+  @apply bg-red-500/10 border border-red-500/20 rounded-xl p-5 text-slate-300;
+}
+
+/* ─── Loading Spinner ─── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  @apply inline-block w-5 h-5 border-2 border-slate-600 border-t-indigo-500 rounded-full;
+  animation: spin 0.6s linear infinite;
+}
+
+.spinner-lg {
+  @apply inline-block w-8 h-8 border-3 border-slate-600 border-t-indigo-500 rounded-full;
+  animation: spin 0.6s linear infinite;
+}
+
+/* ─── Skeleton Loading ─── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  @apply rounded-lg;
+  background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* ─── Color utility classes ─── */
+.text-positive { @apply text-emerald-400; }
+.text-negative { @apply text-red-400; }
+.text-warning  { @apply text-amber-400; }
+.text-muted    { @apply text-slate-500; }
+
+/* ─── Tabular numbers for aligned numeric columns ─── */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Divider ─── */
+.divider {
+  @apply border-t border-slate-800 my-6;
+}
+
+/* ─── Gradient text ─── */
+.gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400;
+}
+
+/* ─── Focus ring ─── */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:ring-offset-2 focus:ring-offset-slate-900;
+}
+
+/* ─── Expandable sections (details/summary) ─── */
+details {
+  @apply bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden;
+}
+
+details summary {
+  @apply px-5 py-3.5 cursor-pointer font-semibold text-slate-200
+         hover:bg-slate-800/50 transition-colors duration-200
+         list-none select-none;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details summary::before {
+  content: "▸";
+  @apply inline-block mr-2.5 text-indigo-400 transition-transform duration-200;
+}
+
+details[open] summary::before {
+  transform: rotate(90deg);
+}
+
+details[open] summary {
+  @apply border-b border-slate-800;
+}
+
+details .details-content {
+  @apply px-5 py-4 text-sm text-slate-300 leading-relaxed;
+}
+
+/* ─── Section divider ─── */
+.section-divider {
+  @apply border-t border-slate-800/60 my-10;
+}
+
+/* ─── Reference links ─── */
+.ref-link {
+  @apply block px-3 py-2 bg-slate-800/40 border border-slate-700/50 rounded-lg
+         text-indigo-400 hover:text-indigo-300 hover:border-indigo-500/30
+         hover:bg-slate-800/60 transition-all duration-200 text-sm;
+}
+
+/* ─── Metric explain cards ─── */
+.metric-explain {
+  @apply text-center p-5 bg-slate-900/60 border border-slate-800 rounded-xl;
+}
+
+.metric-explain .metric-val {
+  @apply text-3xl font-bold text-indigo-400;
+}
+
+.metric-explain .metric-lbl {
+  @apply text-sm text-slate-400 mt-1;
 }

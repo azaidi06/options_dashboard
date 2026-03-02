@@ -414,6 +414,20 @@ def merge_all_data(ticker: str, start: pd.Timestamp, end: pd.Timestamp, output_p
 
     all_dfs = []
 
+    # Load existing combined parquet first (as the base dataset)
+    existing_combined = output_path
+    if not existing_combined.exists() and ticker.upper() == "AMD":
+        existing_combined = get_legacy_dir(ticker) / "AMD_options.parquet"
+    if existing_combined.exists():
+        try:
+            df_existing = pd.read_parquet(existing_combined)
+            if not df_existing.empty:
+                df_existing["date"] = pd.to_datetime(df_existing["date"])
+                all_dfs.append(df_existing)
+                print(f"Loaded existing combined: {len(df_existing):,} rows ({df_existing['date'].min().date()} to {df_existing['date'].max().date()})")
+        except Exception as e:
+            print(f"  Warning: Could not read existing combined parquet: {e}")
+
     # Load legacy CSV files
     legacy_dir = get_legacy_dir(ticker)
     if legacy_dir.exists():

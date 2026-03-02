@@ -1,6 +1,7 @@
 /**
- * Button component
+ * Button component - dark theme with indigo accent
  */
+
 export function Button({
   children,
   onClick,
@@ -9,14 +10,16 @@ export function Button({
   className = '',
   ...props
 }) {
-  const baseClass = variant === 'secondary' ? 'btn-secondary' : 'btn';
-  const disabledClass = disabled ? 'opacity-50 cursor-not-allowed' : '';
+  const base =
+    variant === 'secondary' ? 'btn-secondary' :
+    variant === 'ghost' ? 'btn-ghost' :
+    'btn';
 
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`${baseClass} ${disabledClass} ${className}`}
+      className={`${base} ${disabled ? 'opacity-40 cursor-not-allowed' : ''} ${className}`}
       {...props}
     >
       {children}

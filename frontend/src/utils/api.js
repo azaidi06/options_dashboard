@@ -3,33 +3,37 @@
  * Handles all HTTP requests to the backend API
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 /**
  * Generic fetch wrapper with error handling
  */
 async function fetchAPI(endpoint, options = {}) {
+  let response;
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    response = await fetch(`${API_BASE_URL}${endpoint}`, {
       headers: {
         'Content-Type': 'application/json',
         ...options.headers,
       },
       ...options,
     });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({
-        detail: response.statusText,
-      }));
-      throw new Error(error.detail || `API error: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error(`API Error (${endpoint}):`, error);
-    throw error;
+  } catch (err) {
+    const networkError = new Error(
+      'Backend not running. Start with: python -m uvicorn api.main:app --port 8000 --reload'
+    );
+    networkError.isNetworkError = true;
+    throw networkError;
   }
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({
+      detail: response.statusText,
+    }));
+    throw new Error(error.detail || `API error: ${response.status}`);
+  }
+
+  return await response.json();
 }
 
 // ============================================================================

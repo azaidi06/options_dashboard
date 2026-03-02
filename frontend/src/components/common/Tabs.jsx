@@ -1,37 +1,33 @@
 /**
- * Tabs component
+ * Tabs component - pill style, dark theme
  */
-import { useState } from 'react';
+import { useState, Children } from 'react';
 
 export function Tabs({ children, defaultTab = 0 }) {
   const [activeTab, setActiveTab] = useState(defaultTab);
-
-  // Filter out null/undefined children
-  const validChildren = children.filter((child) => child != null);
+  const tabs = Children.toArray(children).filter(Boolean);
 
   return (
     <div>
-      {/* Tab buttons */}
-      <div className="flex border-b border-gray-200 gap-0">
-        {validChildren.map((tab, index) => (
+      {/* Tab bar - pill style */}
+      <div className="flex gap-1 p-1 bg-slate-900/60 border border-slate-800 rounded-xl mb-6 overflow-x-auto">
+        {tabs.map((tab, i) => (
           <button
-            key={index}
-            onClick={() => setActiveTab(index)}
-            className={`tab-button ${activeTab === index ? 'active' : ''}`}
+            key={i}
+            onClick={() => setActiveTab(i)}
+            className={`tab-button whitespace-nowrap ${i === activeTab ? 'active' : ''}`}
           >
             {tab.props.label}
           </button>
         ))}
       </div>
 
-      {/* Tab content */}
-      <div className="mt-4">
-        {validChildren[activeTab]}
-      </div>
+      {/* Active panel */}
+      <div>{tabs[activeTab]?.props.children}</div>
     </div>
   );
 }
 
-export function Tab({ children, label }) {
-  return <div>{children}</div>;
+export function Tab({ label, children }) {
+  return <>{children}</>;
 }

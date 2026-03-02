@@ -59,8 +59,8 @@ export function useTickerDateRange(ticker) {
  * Hook to fetch option chain for a ticker
  */
 export function useOptionChain(ticker, date, expiration) {
-  const { data, error, isLoading } = useSWR(
-    ticker && date && expiration ? [`option-chain-${ticker}`, date, expiration] : null,
+  const { data, error, isLoading, mutate } = useSWR(
+    ticker && date ? [`option-chain-${ticker}`, date, expiration || ''] : null,
     () => fetchOptionChain(ticker, date, expiration),
     {
       revalidateOnFocus: false,
@@ -72,6 +72,7 @@ export function useOptionChain(ticker, date, expiration) {
     data,
     loading: isLoading,
     error: error?.message,
+    refetch: mutate,
   };
 }
 
