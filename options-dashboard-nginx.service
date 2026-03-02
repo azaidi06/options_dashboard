@@ -1,0 +1,19 @@
+[Unit]
+Description=Options Dashboard Nginx Web Server
+After=network.target
+
+[Service]
+Type=forking
+User=root
+PIDFile=/var/run/nginx.pid
+
+# Copy nginx config and reload
+ExecStartPre=/bin/sh -c 'cp /home/ubuntu/options_dashboard/nginx.conf /etc/nginx/sites-available/options-dashboard'
+ExecStartPre=/bin/sh -c 'ln -sf /etc/nginx/sites-available/options-dashboard /etc/nginx/sites-enabled/options-dashboard'
+ExecStart=/usr/sbin/nginx -c /etc/nginx/nginx.conf
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s QUIT $MAINPID
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
