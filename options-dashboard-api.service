@@ -7,8 +7,8 @@ Wants=options-dashboard-nginx.service
 Type=simple
 User=ubuntu
 WorkingDirectory=/home/ubuntu/options_dashboard
-Environment="PATH=/home/ubuntu/options_dashboard/.venv/bin"
-ExecStart=/home/ubuntu/options_dashboard/.venv/bin/python -m uvicorn api.main:app --host 127.0.0.1 --port 8000 --workers 2
+Environment="PATH=/home/ubuntu/options_dashboard/venv/bin"
+ExecStart=/home/ubuntu/options_dashboard/venv/bin/python -m uvicorn api.main:app --host 127.0.0.1 --port 8000 --workers 2
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=process
 Restart=always

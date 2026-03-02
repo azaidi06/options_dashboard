@@ -2,7 +2,7 @@
  * Stock Analysis Page - dark theme
  */
 import { useState } from 'react';
-import { useStockData, useIndicators, useDrawdown, useOpportunities } from '../../hooks/useStockData';
+import { useStockData, useIndicators, useDrawdown, useOpportunities, useTickers } from '../../hooks/useStockData';
 import { Layout } from '../layout/Layout';
 import { Card, CardLg, MetricCard } from '../common/Card';
 import { Input, Select } from '../common/Input';
@@ -27,6 +27,7 @@ export function StockAnalysisPage() {
   const [exitThreshold, setExitThreshold] = useState(0.05);
 
   // Data hooks
+  const { tickers } = useTickers();
   const stockData = useStockData(ticker, startDate, endDate, lookbackDays);
   const indicators = useIndicators(ticker, startDate, endDate);
   const drawdown = useDrawdown(ticker, startDate, endDate);
@@ -40,11 +41,15 @@ export function StockAnalysisPage() {
         {/* Input Controls */}
         <CardLg className="mb-6">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <Input
+            <Select
               label="Ticker"
               value={ticker}
-              onChange={setTicker}
-              placeholder="e.g., AAPL"
+              onChange={(v) => setTicker(v)}
+              options={
+                tickers.length > 0
+                  ? tickers.map((t) => ({ value: t, label: t }))
+                  : [{ value: ticker, label: ticker }]
+              }
               disabled={isLoading}
             />
             <Input
