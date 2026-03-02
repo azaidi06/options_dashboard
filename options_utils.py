@@ -9,7 +9,7 @@ import numpy as np
 from pathlib import Path
 from typing import Optional
 
-OPTIONS_DATA_DIR = Path("options_data")
+OPTIONS_DATA_DIR = Path(__file__).parent / "options_data"
 
 # Educational resource links
 EDUCATIONAL_LINKS = {
