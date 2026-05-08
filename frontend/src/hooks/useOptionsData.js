@@ -13,6 +13,7 @@ import {
   fetchPriceChangeImpact,
   fetchMoneyness,
   fetchPositionSize,
+  fetchTickerCoverage,
 } from '../utils/api';
 
 /**
@@ -58,10 +59,10 @@ export function useTickerDateRange(ticker) {
 /**
  * Hook to fetch option chain for a ticker
  */
-export function useOptionChain(ticker, date, expiration) {
+export function useOptionChain(ticker, date, expiration, optionType = 'put') {
   const { data, error, isLoading, mutate } = useSWR(
-    ticker && date ? [`option-chain-${ticker}`, date] : null,
-    () => fetchOptionChain(ticker, date, expiration),
+    ticker && date ? [`option-chain-${ticker}`, date, optionType] : null,
+    () => fetchOptionChain(ticker, date, expiration, optionType),
     {
       revalidateOnFocus: false,
       dedupingInterval: 60000, // 1 minute
@@ -79,10 +80,10 @@ export function useOptionChain(ticker, date, expiration) {
 /**
  * Hook to fetch IV smile data
  */
-export function useIVSmile(ticker, date, expiration) {
+export function useIVSmile(ticker, date, expiration, optionType = 'put') {
   const { data, error, isLoading } = useSWR(
-    ticker && date && expiration ? [`iv-smile-${ticker}`, date, expiration] : null,
-    () => fetchIVSmile(ticker, date, expiration),
+    ticker && date && expiration ? [`iv-smile-${ticker}`, date, expiration, optionType] : null,
+    () => fetchIVSmile(ticker, date, expiration, optionType),
     {
       revalidateOnFocus: false,
       dedupingInterval: 60000,
@@ -173,6 +174,27 @@ export function useMoneyness(strike, currentPrice, threshold = 0.02) {
     data,
     loading: isLoading,
     error: error?.message,
+  };
+}
+
+/**
+ * Hook to fetch ticker coverage list (cached tickers and their date ranges).
+ */
+export function useTickerCoverage() {
+  const { data, error, isLoading, mutate } = useSWR(
+    'ticker-coverage',
+    fetchTickerCoverage,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 60000,
+    }
+  );
+
+  return {
+    data: Array.isArray(data) ? data : [],
+    loading: isLoading,
+    error: error?.message,
+    refetch: mutate,
   };
 }
 

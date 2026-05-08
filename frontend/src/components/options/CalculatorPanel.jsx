@@ -31,21 +31,27 @@ const GRID_COLOR = '#1e293b';
 const AXIS_TICK = { fontSize: 11, fill: '#94a3b8' };
 const AXIS_STROKE = '#334155';
 
-export function CalculatorPanel() {
+export function CalculatorPanel({ optionType = 'put' }) {
+  const isCall = String(optionType).toLowerCase() === 'call';
+  const optLabel = isCall ? 'call' : 'put';
+  const optLabelTitle = isCall ? 'Call' : 'Put';
+
   const [tdPremium, setTdPremium] = useState(2.5);
   const [tdTheta, setTdTheta] = useState(-0.05);
   const [tdDays, setTdDays] = useState(30);
   const timeDecay = useMemo(() => calculateTimeDecay(tdPremium, tdTheta, tdDays), [tdPremium, tdTheta, tdDays]);
 
+  // Default delta sign flips with option type: long calls ~+0.45, long puts ~-0.45.
+  const defaultDelta = isCall ? 0.45 : -0.45;
   const [piPremium, setPiPremium] = useState(2.5);
-  const [piDelta, setPiDelta] = useState(-0.45);
+  const [piDelta, setPiDelta] = useState(defaultDelta);
   const [piGamma, setPiGamma] = useState(0.02);
-  const [piPriceChange, setPiPriceChange] = useState(-5);
+  const [piPriceChange, setPiPriceChange] = useState(isCall ? 5 : -5);
   const priceImpact = useMemo(() => calculatePriceChangeImpact(piPremium, piDelta, piGamma, piPriceChange), [piPremium, piDelta, piGamma, piPriceChange]);
 
   const [mnStrike, setMnStrike] = useState(100);
   const [mnPrice, setMnPrice] = useState(102);
-  const moneyness = useMemo(() => classifyMoneyness(mnStrike, mnPrice), [mnStrike, mnPrice]);
+  const moneyness = useMemo(() => classifyMoneyness(mnStrike, mnPrice, 0.02, optionType), [mnStrike, mnPrice, optionType]);
 
   const [psAccount, setPsAccount] = useState(10000);
   const [psRisk, setPsRisk] = useState(2);
@@ -117,7 +123,7 @@ export function CalculatorPanel() {
               <p className="text-sm text-slate-300">
                 <strong className="text-slate-100">Delta Effect:</strong> ${priceImpact.delta_effect.toFixed(3)}
                 <br /><strong className="text-slate-100">Gamma Effect:</strong> ${priceImpact.gamma_effect.toFixed(3)}
-                <br /><strong className="text-slate-100">What it means:</strong> Shows how put value changes when
+                <br /><strong className="text-slate-100">What it means:</strong> Shows how {optLabel} value changes when
                 stock price moves, accounting for both delta and gamma.
               </p>
             </div>
@@ -153,12 +159,21 @@ export function CalculatorPanel() {
             </div>
 
             <div className="info-box">
-              <p className="text-sm text-slate-300">
-                <strong className="text-slate-100">For Put Options:</strong><br />
-                <strong>ITM:</strong> Strike &gt; Stock Price (intrinsic value)<br />
-                <strong>ATM:</strong> Strike ≈ Stock Price (sensitive to moves)<br />
-                <strong>OTM:</strong> Strike &lt; Stock Price (time value only)
-              </p>
+              {isCall ? (
+                <p className="text-sm text-slate-300">
+                  <strong className="text-slate-100">For Call Options:</strong><br />
+                  <strong>ITM:</strong> Strike &lt; Stock Price (intrinsic value)<br />
+                  <strong>ATM:</strong> Strike ≈ Stock Price (sensitive to moves)<br />
+                  <strong>OTM:</strong> Strike &gt; Stock Price (time value only)
+                </p>
+              ) : (
+                <p className="text-sm text-slate-300">
+                  <strong className="text-slate-100">For Put Options:</strong><br />
+                  <strong>ITM:</strong> Strike &gt; Stock Price (intrinsic value)<br />
+                  <strong>ATM:</strong> Strike ≈ Stock Price (sensitive to moves)<br />
+                  <strong>OTM:</strong> Strike &lt; Stock Price (time value only)
+                </p>
+              )}
             </div>
           </CardLg>
         </Tab>

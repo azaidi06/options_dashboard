@@ -6,7 +6,8 @@ import { SWRConfig } from 'swr';
 import { HomePage } from './components/pages/HomePage';
 import { LearnPage } from './components/pages/LearnPage';
 import { StockAnalysisPage } from './components/pages/StockAnalysisPage';
-import { PutOptionsPage } from './components/pages/PutOptionsPage';
+import { OptionsPage } from './components/pages/OptionsPage';
+import { TickersPage } from './components/pages/TickersPage';
 import './index.css';
 
 function App() {
@@ -29,7 +30,8 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/learn" element={<LearnPage />} />
           <Route path="/stock" element={<StockAnalysisPage />} />
-          <Route path="/options" element={<PutOptionsPage />} />
+          <Route path="/options" element={<OptionsPage />} />
+          <Route path="/tickers" element={<TickersPage />} />
         </Routes>
       </Router>
     </SWRConfig>

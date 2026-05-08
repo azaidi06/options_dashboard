@@ -114,66 +114,100 @@ export async function fetchTickerDateRange(ticker) {
   return fetchAPI(`/options/${ticker}/dates`);
 }
 
-export async function fetchOptionChain(ticker, date, expiration) {
+export async function fetchOptionChain(ticker, date, expiration, optionType = 'put') {
   const params = new URLSearchParams({
     ...(date && { date }),
     ...(expiration && { expiration }),
+    option_type: optionType,
   });
   return fetchAPI(`/options/${ticker}/chain?${params}`);
 }
 
-export async function fetchIVSmile(ticker, date, expiration) {
+export async function fetchIVSmile(ticker, date, expiration, optionType = 'put') {
   const params = new URLSearchParams({
     date,
     expiration,
+    option_type: optionType,
   });
   return fetchAPI(`/options/${ticker}/iv-smile?${params}`);
 }
 
-export async function fetchPayoffDiagram(strike, premium, minPrice, maxPrice, numPoints = 11) {
+export async function fetchPayoffDiagram(strike, premium, minPrice, maxPrice, numPoints = 11, optionType = 'put') {
   const params = new URLSearchParams({
     strike,
     premium,
     ...(minPrice && { price_range_min: minPrice }),
     ...(maxPrice && { price_range_max: maxPrice }),
     num_points: numPoints,
+    option_type: optionType,
   });
   return fetchAPI(`/options/payoff?${params}`);
 }
 
-export async function fetchTimeDecay(premium, theta, daysRemaining) {
+export async function fetchTimeDecay(premium, theta, daysRemaining, optionType = 'put') {
   const params = new URLSearchParams({
     premium,
     theta,
     days_remaining: daysRemaining,
+    option_type: optionType,
   });
   return fetchAPI(`/options/calculator/time-decay?${params}`);
 }
 
-export async function fetchPriceChangeImpact(currentPremium, delta, gamma, priceChange) {
+export async function fetchPriceChangeImpact(currentPremium, delta, gamma, priceChange, optionType = 'put') {
   const params = new URLSearchParams({
     current_premium: currentPremium,
     delta,
     gamma,
     price_change: priceChange,
+    option_type: optionType,
   });
   return fetchAPI(`/options/calculator/price-change?${params}`);
 }
 
-export async function fetchMoneyness(strike, currentPrice, threshold = 0.02) {
+export async function fetchMoneyness(strike, currentPrice, threshold = 0.02, optionType = 'put') {
   const params = new URLSearchParams({
     strike,
     current_price: currentPrice,
     threshold,
+    option_type: optionType,
   });
   return fetchAPI(`/options/calculator/moneyness?${params}`);
 }
 
-export async function fetchPositionSize(accountValue, riskPercent, premiumPerContract) {
+export async function fetchPositionSize(accountValue, riskPercent, premiumPerContract, optionType = 'put') {
   const params = new URLSearchParams({
     account_value: accountValue,
     risk_percent: riskPercent,
     premium_per_contract: premiumPerContract,
+    option_type: optionType,
   });
   return fetchAPI(`/options/calculator/position-size?${params}`);
+}
+
+// ============================================================================
+// Tickers (data management) Endpoints
+// ============================================================================
+
+export async function fetchTickerCoverage() {
+  return fetchAPI('/tickers/coverage');
+}
+
+export async function fetchTickerCoverageOne(ticker) {
+  return fetchAPI(`/tickers/coverage/${ticker}`);
+}
+
+export async function probeTicker(ticker) {
+  return fetchAPI(`/tickers/probe/${ticker}`);
+}
+
+export async function startTickerFetch(ticker, fromDate, toDate) {
+  return fetchAPI('/tickers/fetch', {
+    method: 'POST',
+    body: JSON.stringify({ ticker, fromDate, toDate }),
+  });
+}
+
+export async function fetchTickerJobStatus(jobId) {
+  return fetchAPI(`/tickers/fetch/status/${jobId}`);
 }

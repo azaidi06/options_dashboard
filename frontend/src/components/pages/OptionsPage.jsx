@@ -1,7 +1,10 @@
 /**
- * Put Options Page - dark theme
+ * Options Page - dark theme.
+ * Supports both Put and Call options via a Put/Call toggle.
+ * (Renamed from PutOptionsPage when calls support landed.)
  */
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { FileSearch, ChevronsRight } from 'lucide-react';
 import { Layout } from '../layout/Layout';
 import { CardLg } from '../common/Card';
@@ -17,18 +20,70 @@ import { GreeksExplainer } from '../options/GreeksExplainer';
 import { useTickers, useTickerDateRange, useOptionChain, useIVSmile } from '../../hooks/useOptionsData';
 import { recordRecentTicker } from './HomePage';
 
-export function PutOptionsPage() {
-  const [selectedTicker, setSelectedTicker] = useState('AMD');
+/**
+ * Put/Call segmented control.
+ * Indigo-glow active style matching the AppSwitcher.
+ */
+function OptionTypeToggle({ value, onChange }) {
+  const items = [
+    { id: 'call', label: 'Calls' },
+    { id: 'put', label: 'Puts' },
+  ];
+  return (
+    <div
+      role="tablist"
+      aria-label="Option type"
+      className="flex items-center gap-1 rounded-full border border-slate-700/60 bg-slate-900/60 backdrop-blur px-1 py-1 w-fit"
+    >
+      {items.map((item) => {
+        const active = item.id === value;
+        return (
+          <button
+            key={item.id}
+            type="button"
+            role="tab"
+            aria-selected={active}
+            onClick={() => onChange(item.id)}
+            className={
+              'px-4 py-1 text-xs font-semibold rounded-full transition-colors ' +
+              (active
+                ? 'bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-500/40'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40')
+            }
+          >
+            {item.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+export function OptionsPage() {
+  const [searchParams] = useSearchParams();
+  const queryTicker = searchParams.get('ticker');
+
+  const [selectedTicker, setSelectedTicker] = useState(queryTicker || 'AMD');
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedExpiration, setSelectedExpiration] = useState('');
+  const [optionType, setOptionType] = useState('put');
+
+  // React to ?ticker= changes
+  useEffect(() => {
+    if (queryTicker && queryTicker !== selectedTicker) {
+      setSelectedTicker(queryTicker);
+      setSelectedDate('');
+      setSelectedExpiration('');
+    }
+  }, [queryTicker]);
 
   // Data hooks
   const tickers = useTickers();
   const dateRange = useTickerDateRange(selectedTicker);
 
   // Fetch chain with just ticker + date (expiration is optional for getting available expirations)
-  const optionChain = useOptionChain(selectedTicker, selectedDate, selectedExpiration);
-  const ivSmile = useIVSmile(selectedTicker, selectedDate, selectedExpiration);
+  const optionChain = useOptionChain(selectedTicker, selectedDate, selectedExpiration, optionType);
+  const ivSmile = useIVSmile(selectedTicker, selectedDate, selectedExpiration, optionType);
 
   // Set date to max available when dateRange loads
   useEffect(() => {
@@ -49,6 +104,11 @@ export function PutOptionsPage() {
     }
   }, [expirations.length]);
 
+  // Reset expiration when option type changes (chain repopulates)
+  useEffect(() => {
+    setSelectedExpiration('');
+  }, [optionType]);
+
   // Record recent ticker visit
   useEffect(() => {
     if (selectedTicker) recordRecentTicker(selectedTicker);
@@ -67,7 +127,10 @@ export function PutOptionsPage() {
       <div className="max-w-7xl mx-auto">
         {/* Selection Controls */}
         <CardLg className="mb-6">
-          <h2 className="text-base font-semibold mb-4 text-slate-200">Select Data</h2>
+          <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
+            <h2 className="text-base font-semibold text-slate-200">Select Data</h2>
+            <OptionTypeToggle value={optionType} onChange={setOptionType} />
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Select
               label="Ticker"
@@ -124,6 +187,8 @@ export function PutOptionsPage() {
           {dateRange.data && (
             <p className="mt-3 text-xs text-slate-500">
               Data available: {dateRange.data.min_date} to {dateRange.data.max_date}
+              {' · '}
+              <span className="text-indigo-400">{optionType === 'call' ? 'Calls' : 'Puts'}</span>
             </p>
           )}
 
@@ -197,13 +262,13 @@ export function PutOptionsPage() {
 
           <Tab label="Payoff Diagram">
             <CardLg>
-              <PayoffDiagram chainData={filteredChainData} />
+              <PayoffDiagram chainData={filteredChainData} optionType={optionType} />
             </CardLg>
           </Tab>
 
           <Tab label="Calculators">
             <CardLg>
-              <CalculatorPanel />
+              <CalculatorPanel optionType={optionType} />
             </CardLg>
           </Tab>
 

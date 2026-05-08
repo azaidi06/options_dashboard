@@ -59,12 +59,12 @@ export function HomePage() {
                   <BarChart3 className="w-5 h-5 text-purple-400" />
                 </div>
                 <h2 className="text-xl font-bold text-slate-100 group-hover:text-purple-400 transition-colors">
-                  Put Options
+                  Options
                 </h2>
                 <ArrowRight className="w-4 h-4 ml-auto text-slate-600 group-hover:text-purple-400 transition-colors" />
               </div>
               <p className="text-slate-400 mb-3 text-sm leading-relaxed">
-                Historical option chains, IV smiles, payoff diagrams, calculators, and a Greeks reference.
+                Historical option chains (calls &amp; puts), IV smiles, payoff diagrams, calculators, and a Greeks reference.
               </p>
             </div>
           </Link>

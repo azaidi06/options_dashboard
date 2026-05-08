@@ -74,7 +74,9 @@ function pickATMContract(chainRows) {
   return sorted[Math.floor(sorted.length / 2)];
 }
 
-export function PayoffDiagram({ chainData = null }) {
+export function PayoffDiagram({ chainData = null, optionType = 'put' }) {
+  const isCall = String(optionType).toLowerCase() === 'call';
+  const positionLabel = isCall ? 'Long Call' : 'Long Put';
   const [strike, setStrike] = useState(100);
   const [premium, setPremium] = useState(2.5);
   const [minPrice, setMinPrice] = useState(70);
@@ -101,18 +103,18 @@ export function PayoffDiagram({ chainData = null }) {
     setAutoSeeded(true);
   }, [chainData, autoSeeded]);
 
-  // Reset auto-seed flag if a fresh chain (different ticker/date) arrives.
+  // Reset auto-seed flag if a fresh chain (different ticker/date/option_type) arrives.
   // We track payload identity via length + first strike, which is cheap.
   const seedKey = chainData?.data?.length
-    ? `${chainData.data.length}-${chainData.data[0]?.strike}-${chainData.data[0]?.expiration}`
-    : null;
+    ? `${chainData.data.length}-${chainData.data[0]?.strike}-${chainData.data[0]?.expiration}-${optionType}`
+    : optionType;
   useEffect(() => {
     setAutoSeeded(false);
   }, [seedKey]);
 
   const payoff = useMemo(
-    () => calculatePayoff(strike, premium, minPrice, maxPrice, 50),
-    [strike, premium, minPrice, maxPrice],
+    () => calculatePayoff(strike, premium, minPrice, maxPrice, 50, optionType),
+    [strike, premium, minPrice, maxPrice, optionType],
   );
 
   const { data, breakeven } = payoff;
@@ -124,9 +126,15 @@ export function PayoffDiagram({ chainData = null }) {
     pl_per_share: d.pl_per_share,
   }));
 
+  // Max profit differs by direction:
+  // - Long put: capped at strike - premium (when stock goes to 0)
+  // - Long call: theoretically unbounded; we report "Unlimited"
+  const maxProfit = isCall ? null : strike - premium;
+  const maxProfitText = isCall ? 'Unlimited' : formatCurrency(maxProfit, 2);
+
   return (
     <div>
-      <h3 className="text-base font-semibold mb-4 text-slate-200">Long Put Payoff Diagram</h3>
+      <h3 className="text-base font-semibold mb-4 text-slate-200">{positionLabel} Payoff Diagram</h3>
 
       {/* Inputs */}
       <CardLg className="mb-6">
@@ -149,7 +157,7 @@ export function PayoffDiagram({ chainData = null }) {
         <MetricCard label="Strike" value={formatCurrency(strike, 2)} />
         <MetricCard label="Premium" value={formatCurrency(premium, 2)} />
         <MetricCard label="Breakeven" value={formatCurrency(breakeven, 2)} />
-        <MetricCard label="Max Loss" value={formatCurrency(-premium, 2)} />
+        <MetricCard label={isCall ? 'Max Profit' : 'Max Loss'} value={isCall ? maxProfitText : formatCurrency(-premium, 2)} />
       </div>
 
       {/* Chart */}
@@ -195,13 +203,22 @@ export function PayoffDiagram({ chainData = null }) {
 
       {/* Explanation */}
       <div className="info-box">
-        <h4 className="text-sm font-semibold mb-3 text-slate-100">Long Put Payoff Structure</h4>
-        <div className="space-y-2 text-sm text-slate-300">
-          <p><strong className="text-slate-100">Profit Zone:</strong> When stock falls below breakeven ({formatCurrency(breakeven, 2)}), you profit.</p>
-          <p><strong className="text-slate-100">Max Profit:</strong> {formatCurrency(strike - premium, 2)} per share (stock goes to $0)</p>
-          <p><strong className="text-slate-100">Max Loss:</strong> {formatCurrency(premium, 2)} per share (premium paid, stock stays above {formatCurrency(strike, 2)})</p>
-          <p><strong className="text-slate-100">Breakeven:</strong> {formatCurrency(breakeven, 2)} (strike minus premium)</p>
-        </div>
+        <h4 className="text-sm font-semibold mb-3 text-slate-100">{positionLabel} Payoff Structure</h4>
+        {isCall ? (
+          <div className="space-y-2 text-sm text-slate-300">
+            <p><strong className="text-slate-100">Profit Zone:</strong> When stock rises above breakeven ({formatCurrency(breakeven, 2)}), you profit.</p>
+            <p><strong className="text-slate-100">Max Profit:</strong> Unlimited (no cap as stock keeps rising)</p>
+            <p><strong className="text-slate-100">Max Loss:</strong> {formatCurrency(premium, 2)} per share (premium paid, stock stays below {formatCurrency(strike, 2)})</p>
+            <p><strong className="text-slate-100">Breakeven:</strong> {formatCurrency(breakeven, 2)} (strike plus premium)</p>
+          </div>
+        ) : (
+          <div className="space-y-2 text-sm text-slate-300">
+            <p><strong className="text-slate-100">Profit Zone:</strong> When stock falls below breakeven ({formatCurrency(breakeven, 2)}), you profit.</p>
+            <p><strong className="text-slate-100">Max Profit:</strong> {formatCurrency(strike - premium, 2)} per share (stock goes to $0)</p>
+            <p><strong className="text-slate-100">Max Loss:</strong> {formatCurrency(premium, 2)} per share (premium paid, stock stays above {formatCurrency(strike, 2)})</p>
+            <p><strong className="text-slate-100">Breakeven:</strong> {formatCurrency(breakeven, 2)} (strike minus premium)</p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -3,20 +3,22 @@
  */
 import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, LineChart, BarChart3, BookOpen, Search } from 'lucide-react';
+import { Home, LineChart, BarChart3, BookOpen, Search, Database } from 'lucide-react';
 import AppSwitcher from '../common/AppSwitcher';
 
 const NAV_ITEMS = [
   { to: '/', label: 'Home', Icon: Home },
   { to: '/stock', label: 'Stock Analysis', Icon: LineChart },
-  { to: '/options', label: 'Put Options', Icon: BarChart3 },
+  { to: '/options', label: 'Options', Icon: BarChart3 },
+  { to: '/tickers', label: 'Tickers', Icon: Database },
   { to: '/learn', label: 'Learn', Icon: BookOpen },
 ];
 
 const PAGE_TITLES = {
   '/': 'Home',
   '/stock': 'Stock Analysis',
-  '/options': 'Put Options',
+  '/options': 'Options',
+  '/tickers': 'Tickers',
   '/learn': 'Learn',
 };
 

@@ -89,6 +89,11 @@ export function GreeksExplainer() {
           Mathematical measures of how option prices change in response to different factors.
           Think of them as your option's sensitivity dials.
         </p>
+        <p className="text-sm text-slate-400 mt-2">
+          <strong className="text-slate-300">Direction note:</strong> Delta is <strong className="text-emerald-400">positive</strong> for long calls
+          (range 0.0 → +1.0) and <strong className="text-red-400">negative</strong> for long puts (range -1.0 → 0.0). Gamma, vega, and (long) theta
+          behave the same way regardless of direction.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">

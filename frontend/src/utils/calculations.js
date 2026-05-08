@@ -4,19 +4,22 @@
  */
 
 /**
- * Calculate long put payoff at expiration.
+ * Calculate long option payoff at expiration.
+ * Supports puts (default) and calls via `optionType`.
  * Returns array of { price, pl_per_share } objects.
  */
-export function calculatePayoff(strike, premium, minPrice, maxPrice, numPoints = 50) {
+export function calculatePayoff(strike, premium, minPrice, maxPrice, numPoints = 50, optionType = 'put') {
   const step = (maxPrice - minPrice) / (numPoints - 1);
+  const isCall = String(optionType).toLowerCase() === 'call';
   const data = [];
   for (let i = 0; i < numPoints; i++) {
     const price = minPrice + step * i;
-    const pl_per_share = Math.max(strike - price, 0) - premium;
+    const intrinsic = isCall ? Math.max(price - strike, 0) : Math.max(strike - price, 0);
+    const pl_per_share = intrinsic - premium;
     data.push({ price: Math.round(price * 100) / 100, pl_per_share: Math.round(pl_per_share * 100) / 100 });
   }
-  const breakeven = strike - premium;
-  return { data, breakeven, strike, premium };
+  const breakeven = isCall ? strike + premium : strike - premium;
+  return { data, breakeven, strike, premium, optionType: isCall ? 'call' : 'put' };
 }
 
 /**
@@ -51,19 +54,23 @@ export function calculatePriceChangeImpact(currentPremium, delta, gamma, priceCh
 }
 
 /**
- * Classify option moneyness (ITM, ATM, OTM) for a put option.
+ * Classify option moneyness (ITM, ATM, OTM).
+ * Defaults to put semantics (strike > price = ITM); pass optionType='call' to flip.
  */
-export function classifyMoneyness(strike, currentPrice, threshold = 0.02) {
+export function classifyMoneyness(strike, currentPrice, threshold = 0.02, optionType = 'put') {
+  const isCall = String(optionType).toLowerCase() === 'call';
   const pctDiff = (strike - currentPrice) / currentPrice;
   let classification;
   if (Math.abs(pctDiff) <= threshold) {
     classification = 'ATM';
-  } else if (strike > currentPrice) {
-    classification = 'ITM';
+  } else if (isCall) {
+    // Call ITM when strike < price
+    classification = strike < currentPrice ? 'ITM' : 'OTM';
   } else {
-    classification = 'OTM';
+    // Put ITM when strike > price
+    classification = strike > currentPrice ? 'ITM' : 'OTM';
   }
-  return { strike, current_price: currentPrice, pct_diff: pctDiff, classification };
+  return { strike, current_price: currentPrice, pct_diff: pctDiff, classification, option_type: isCall ? 'call' : 'put' };
 }
 
 /**
