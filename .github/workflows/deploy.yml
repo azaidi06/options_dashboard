@@ -35,7 +35,26 @@ jobs:
           target: "/home/ubuntu/options_dashboard/frontend/"
           strip_components: 1
 
-      # ── Sync backend & restart API ────────────────────────────────────────
+      # ── Write API key to .env BEFORE restarting the API ──────────────────
+      # Loaded by both the systemd service (EnvironmentFile) and the daily
+      # cron script (set -a; source .env). Required for /api/tickers/probe
+      # and /api/tickers/fetch to reach Alpha Vantage.
+      - name: Write API key to EC2 .env
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_DEPLOY_KEY }}
+          script: |
+            if [ -z "${{ secrets.ALPHAVANTAGE_API_KEY }}" ]; then
+              echo "ERROR: ALPHAVANTAGE_API_KEY GitHub secret is empty or unset."
+              echo "Add it at github.com/<org>/<repo>/settings/secrets/actions."
+              exit 1
+            fi
+            echo "ALPHAVANTAGE_API_KEY=${{ secrets.ALPHAVANTAGE_API_KEY }}" > /home/ubuntu/options_dashboard/.env
+            chmod 600 /home/ubuntu/options_dashboard/.env
+
+      # ── Sync backend code, install deps, install systemd unit, restart ──
       - name: Pull latest code & restart backend
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -46,30 +65,31 @@ jobs:
             set -e
             cd /home/ubuntu/options_dashboard
 
-            # Pull latest backend code
             git fetch origin main
             git reset --hard origin/main
 
-            # Install any new Python dependencies
             venv/bin/pip install -r requirements.txt -q
 
-            # Restart FastAPI backend
+            # Sync the systemd unit file (picks up EnvironmentFile changes)
+            sudo cp options-dashboard-api.service /etc/systemd/system/options-dashboard-api.service
+            sudo systemctl daemon-reload
             sudo systemctl restart options-dashboard-api
+
+            # Sanity check: did the service come back up?
+            sleep 2
+            if ! systemctl is-active --quiet options-dashboard-api; then
+              echo "FATAL: options-dashboard-api failed to start"
+              sudo journalctl -u options-dashboard-api -n 30 --no-pager
+              exit 1
+            fi
 
             echo "Deploy complete at $(date)"
 
-      # ── Write API key to .env on EC2 ─────────────────────────────────────
-      - name: Write API key to EC2 .env
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_DEPLOY_KEY }}
-          script: |
-            echo "ALPHAVANTAGE_API_KEY=${{ secrets.ALPHAVANTAGE_API_KEY }}" > /home/ubuntu/options_dashboard/.env
-            chmod 600 /home/ubuntu/options_dashboard/.env
-
-      # ── Install daily fetch cron ──────────────────────────────────────────
+      # ── Install daily fetch cron (uses daily_options_update.sh) ──────────
+      # Per-ticker smart fill: each night reads the parquet's lastDate and
+      # fetches forward to today, capped at 90 trading days/run. Steady-
+      # state cost: 1 AV call/ticker/night. Stale tickers recover gradually
+      # over multiple nights.
       - name: Install daily fetch cron
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -78,31 +98,18 @@ jobs:
           key: ${{ secrets.EC2_DEPLOY_KEY }}
           script: |
             mkdir -p /home/ubuntu/options_dashboard/logs
+            chmod +x /home/ubuntu/options_dashboard/daily_options_update.sh
 
-            # Write the daily fetch script
-            cat > /home/ubuntu/options_dashboard/fetch_daily.sh << 'SCRIPT'
-            #!/bin/bash
-            set -e
-            cd /home/ubuntu/options_dashboard
-            source /home/ubuntu/options_dashboard/.env
-            source venv/bin/activate
+            # Replace any prior cron entry; install the new one. 6 UTC = 1 AM
+            # ET on weekdays — picks up previous trading day after AV's
+            # overnight settlement.
+            (
+              crontab -l 2>/dev/null | grep -v 'daily_options_update\|fetch_daily' || true
+              echo "0 6 * * 1-5 /home/ubuntu/options_dashboard/daily_options_update.sh >> /home/ubuntu/options_dashboard/logs/cron.log 2>&1"
+            ) | crontab -
 
-            # Fetch last 10 trading days for all tickers (catches any gaps)
-            for TICKER in AMD AAPL NVDA TSLA AMZN MSFT META GOOGL NFLX INTC \
-                          AVGO ORCL ARM PLTR SNOW SMCI TSM ADBE CRM NOW \
-                          AAOI AXTI COHR FN LITE; do
-              echo "=== $(date -u) Fetching $TICKER ==="
-              python backfill_ticker_options.py $TICKER --fetch --limit 10 || true
-              python backfill_ticker_options.py $TICKER --merge || true
-            done
-
-            echo "=== $(date -u) Daily fetch complete ==="
-            SCRIPT
-
-            chmod +x /home/ubuntu/options_dashboard/fetch_daily.sh
-
-            # Install crontab entry (idempotent — removes old entry first)
-            (crontab -l 2>/dev/null | grep -v fetch_daily; echo "0 6 * * 1-5 /home/ubuntu/options_dashboard/fetch_daily.sh >> /home/ubuntu/options_dashboard/logs/daily_fetch.log 2>&1") | crontab -
+            # Remove the obsolete fetch_daily.sh (predecessor)
+            rm -f /home/ubuntu/options_dashboard/fetch_daily.sh
 
             echo "Cron installed:"
-            crontab -l | grep fetch_daily
+            crontab -l | grep daily_options_update || echo "  (no entry)"

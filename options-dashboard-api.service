@@ -8,6 +8,9 @@ Type=simple
 User=ubuntu
 WorkingDirectory=/home/ubuntu/options_dashboard
 Environment="PATH=/home/ubuntu/options_dashboard/venv/bin"
+# Loads ALPHAVANTAGE_API_KEY (and any other vars). Leading "-" tolerates
+# a missing file so the service starts even on first deploy.
+EnvironmentFile=-/home/ubuntu/options_dashboard/.env
 ExecStart=/home/ubuntu/options_dashboard/venv/bin/python -m uvicorn api.main:app --host 127.0.0.1 --port 8000 --workers 2
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=process
