@@ -19,6 +19,22 @@ from ..services.options import (
 router = APIRouter()
 
 
+_VALID_OPTION_TYPES = {"put", "call", "both"}
+_VALID_SINGLE_OPTION_TYPES = {"put", "call"}
+
+
+def _validate_option_type(option_type: str, allow_both: bool = True) -> str:
+    """Normalise + validate option_type query param. Raises HTTPException(400) on bad input."""
+    ot = str(option_type or "put").strip().lower()
+    valid = _VALID_OPTION_TYPES if allow_both else _VALID_SINGLE_OPTION_TYPES
+    if ot not in valid:
+        raise HTTPException(
+            status_code=400,
+            detail=f"option_type must be one of {sorted(valid)} (got {option_type!r})",
+        )
+    return ot
+
+
 @router.get("/tickers")
 async def list_tickers():
     """Get list of available tickers with options data."""
@@ -50,6 +66,7 @@ async def get_option_chain(
     expiration: Optional[str] = Query(None, description="Expiration date (YYYY-MM-DD)"),
     start_date: Optional[str] = Query(None, description="Start date for range query (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="End date for range query (YYYY-MM-DD)"),
+    option_type: str = Query("put", description="Option type: put|call|both"),
 ):
     """
     Get option chain data for a specific date and/or expiration.
@@ -58,7 +75,9 @@ async def get_option_chain(
     - date: Quote date (YYYY-MM-DD)
     - expiration: Expiration date (YYYY-MM-DD)
     - start_date, end_date: Date range for loading multiple dates
+    - option_type: 'put' (default), 'call', or 'both'
     """
+    ot = _validate_option_type(option_type, allow_both=True)
     try:
         result = load_option_chain(
             ticker=ticker,
@@ -66,6 +85,7 @@ async def get_option_chain(
             expiration=expiration,
             start_date=start_date,
             end_date=end_date,
+            option_type=ot,
         )
         return result
     except Exception as e:
@@ -77,6 +97,7 @@ async def get_smile(
     ticker: str,
     date: str = Query(..., description="Quote date (YYYY-MM-DD)"),
     expiration: str = Query(..., description="Expiration date (YYYY-MM-DD)"),
+    option_type: str = Query("put", description="Option type: put|call|both"),
 ):
     """
     Get IV smile data (implied volatility vs strike) for visualization.
@@ -84,9 +105,11 @@ async def get_smile(
     Query params:
     - date: Quote date (required)
     - expiration: Expiration date (required)
+    - option_type: 'put' (default), 'call', or 'both'
     """
+    ot = _validate_option_type(option_type, allow_both=True)
     try:
-        result = get_iv_smile(ticker, date, expiration)
+        result = get_iv_smile(ticker, date, expiration, option_type=ot)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error getting IV smile: {str(e)}")
@@ -99,9 +122,10 @@ async def payoff_diagram(
     price_range_min: Optional[float] = Query(None, description="Min stock price for range"),
     price_range_max: Optional[float] = Query(None, description="Max stock price for range"),
     num_points: int = Query(11, description="Number of points in diagram"),
+    option_type: str = Query("put", description="Option type: put|call"),
 ):
     """
-    Calculate long put payoff diagram.
+    Calculate long single-leg option payoff diagram.
 
     Query params:
     - strike: Strike price (required)
@@ -109,7 +133,9 @@ async def payoff_diagram(
     - price_range_min: Min stock price (default: 70% of strike)
     - price_range_max: Max stock price (default: 130% of strike)
     - num_points: Number of points (default: 11)
+    - option_type: 'put' (default) or 'call'
     """
+    ot = _validate_option_type(option_type, allow_both=False)
     try:
         result = calculate_payoff(
             strike=strike,
@@ -117,6 +143,7 @@ async def payoff_diagram(
             price_range_min=price_range_min,
             price_range_max=price_range_max,
             num_points=num_points,
+            option_type=ot,
         )
         return result
     except Exception as e:
@@ -128,6 +155,7 @@ async def time_decay(
     premium: float = Query(..., description="Initial premium"),
     theta: float = Query(..., description="Daily theta"),
     days_remaining: int = Query(..., description="Days to expiration"),
+    option_type: str = Query("put", description="Option type: put|call (informational)"),
 ):
     """
     Project premium decay over time.
@@ -136,13 +164,17 @@ async def time_decay(
     - premium: Initial premium (required)
     - theta: Daily theta decay (required)
     - days_remaining: Days to expiration (required)
+    - option_type: 'put' (default) or 'call' (theta decay model is the same;
+      flag is preserved for traceability).
     """
+    ot = _validate_option_type(option_type, allow_both=False)
     try:
         result = calculate_time_decay(
             premium=premium,
             theta=theta,
             days_remaining=days_remaining,
         )
+        result["option_type"] = ot
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error calculating time decay: {str(e)}")
@@ -154,22 +186,26 @@ async def price_change_impact(
     delta: float = Query(..., description="Option delta"),
     gamma: float = Query(..., description="Option gamma"),
     price_change: float = Query(..., description="Change in stock price"),
+    option_type: str = Query("put", description="Option type: put|call"),
 ):
     """
     Estimate premium change from stock price move using delta-gamma approximation.
 
     Query params:
     - current_premium: Current premium (required)
-    - delta: Option delta (required)
+    - delta: Option delta (required). Sign is corrected per option_type.
     - gamma: Option gamma (required)
     - price_change: Change in stock price (required)
+    - option_type: 'put' (default) or 'call'
     """
+    ot = _validate_option_type(option_type, allow_both=False)
     try:
         result = estimate_price_change(
             current_premium=current_premium,
             delta=delta,
             gamma=gamma,
             price_change=price_change,
+            option_type=ot,
         )
         return result
     except Exception as e:
@@ -181,6 +217,7 @@ async def moneyness(
     strike: float = Query(..., description="Strike price"),
     current_price: float = Query(..., description="Current stock price"),
     threshold: float = Query(0.02, description="ATM threshold (as decimal)"),
+    option_type: str = Query("put", description="Option type: put|call"),
 ):
     """
     Classify option moneyness (ITM, ATM, OTM).
@@ -189,12 +226,15 @@ async def moneyness(
     - strike: Strike price (required)
     - current_price: Current stock price (required)
     - threshold: ATM threshold (default: 0.02 = 2%)
+    - option_type: 'put' (default) or 'call' (calls invert ITM rule)
     """
+    ot = _validate_option_type(option_type, allow_both=False)
     try:
         result = classify_moneyness(
             strike=strike,
             current_price=current_price,
             threshold=threshold,
+            option_type=ot,
         )
         return result
     except Exception as e:
@@ -206,6 +246,7 @@ async def position_size(
     account_value: float = Query(..., description="Account value in dollars"),
     risk_percent: float = Query(..., description="Risk percentage (0-100)"),
     premium_per_contract: float = Query(..., description="Premium per contract (premium * 100)"),
+    option_type: str = Query("put", description="Option type: put|call (informational)"),
 ):
     """
     Calculate maximum position size based on risk tolerance.
@@ -214,13 +255,17 @@ async def position_size(
     - account_value: Account value (required)
     - risk_percent: Risk percentage (required)
     - premium_per_contract: Premium per contract (required)
+    - option_type: 'put' (default) or 'call' (sizing math is identical;
+      flag is preserved for traceability).
     """
+    ot = _validate_option_type(option_type, allow_both=False)
     try:
         result = calculate_position_sizing(
             account_value=account_value,
             risk_percent=risk_percent,
             premium_per_contract=premium_per_contract,
         )
+        result["option_type"] = ot
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error calculating position size: {str(e)}")

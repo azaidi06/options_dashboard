@@ -12,6 +12,7 @@ from pathlib import Path
 # Import route handlers
 from .routes.stock import router as stock_router
 from .routes.options import router as options_router
+from .routes.tickers import router as tickers_router
 
 
 # Lifespan context manager for startup/shutdown
@@ -43,6 +44,7 @@ app.add_middleware(
 # Include route modules
 app.include_router(stock_router, prefix="/api/stock", tags=["stock"])
 app.include_router(options_router, prefix="/api/options", tags=["options"])
+app.include_router(tickers_router, prefix="/api/tickers", tags=["tickers"])
 
 
 @app.get("/")

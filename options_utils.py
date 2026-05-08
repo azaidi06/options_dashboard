@@ -72,27 +72,43 @@ def ticker_date_range(ticker: str) -> tuple[pd.Timestamp, pd.Timestamp]:
     return mn, mx
 
 
-def load_puts(
+def load_options(
     ticker: str = "AMD",
+    option_type: str = "put",
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
 ) -> pd.DataFrame:
     """
-    Load options data for a ticker and filter to puts only.
+    Load options data for a ticker and filter to a given option type.
 
     Args:
         ticker: Stock ticker symbol (e.g. "AAPL", "TSLA")
+        option_type: One of "put", "call", or "both" (case-insensitive)
         start_date: Start date filter (YYYY-MM-DD)
         end_date: End date filter (YYYY-MM-DD)
 
     Returns:
-        DataFrame with put options data
+        DataFrame with options data filtered to the requested type.
     """
+    if option_type is None:
+        option_type = "put"
+    ot = str(option_type).strip().lower()
+    if ot not in {"put", "call", "both"}:
+        raise ValueError(
+            f"option_type must be 'put', 'call', or 'both' (got {option_type!r})"
+        )
+
     path = _resolve_parquet_path(ticker)
     df = pd.read_parquet(path)
 
-    # Filter to puts only (handle mixed case: 'put', 'PUT')
-    df = df[df["type"].str.upper() == "PUT"].copy()
+    # Normalise type column case-insensitively and filter accordingly
+    type_upper = df["type"].astype(str).str.upper()
+    if ot == "put":
+        df = df[type_upper == "PUT"].copy()
+    elif ot == "call":
+        df = df[type_upper == "CALL"].copy()
+    else:  # both
+        df = df[type_upper.isin(["PUT", "CALL"])].copy()
 
     # Ensure date columns are datetime
     df["date"] = pd.to_datetime(df["date"])
@@ -107,6 +123,32 @@ def load_puts(
     return df
 
 
+def load_puts(
+    ticker: str = "AMD",
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+) -> pd.DataFrame:
+    """
+    Load options data for a ticker and filter to puts only.
+
+    Backward-compatible thin wrapper around ``load_options(option_type="put")``.
+
+    Args:
+        ticker: Stock ticker symbol (e.g. "AAPL", "TSLA")
+        start_date: Start date filter (YYYY-MM-DD)
+        end_date: End date filter (YYYY-MM-DD)
+
+    Returns:
+        DataFrame with put options data
+    """
+    return load_options(
+        ticker=ticker,
+        option_type="put",
+        start_date=start_date,
+        end_date=end_date,
+    )
+
+
 def load_amd_puts(
     parquet_path: str = "options_data/amd_test/AMD_options.parquet",
     start_date: Optional[str] = None,
@@ -116,7 +158,12 @@ def load_amd_puts(
     return load_puts("AMD", start_date=start_date, end_date=end_date)
 
 
-def classify_moneyness(strike: float, current_price: float, threshold: float = 0.02) -> str:
+def classify_moneyness(
+    strike: float,
+    current_price: float,
+    threshold: float = 0.02,
+    option_type: str = "put",
+) -> str:
     """
     Classify option as ITM, ATM, or OTM.
 
@@ -124,33 +171,49 @@ def classify_moneyness(strike: float, current_price: float, threshold: float = 0
         strike: Option strike price
         current_price: Current stock price
         threshold: Percentage threshold for ATM classification (default 2%)
+        option_type: "put" or "call" (case-insensitive). Defaults to "put"
+                     for backward compatibility.
 
     Returns:
         "ITM" (in-the-money), "ATM" (at-the-money), or "OTM" (out-of-the-money)
     """
+    ot = str(option_type or "put").strip().lower()
     pct_diff = (strike - current_price) / current_price
 
     if abs(pct_diff) <= threshold:
         return "ATM"
-    elif strike > current_price:
-        return "ITM"  # For puts, strike > price = ITM
+
+    if ot == "call":
+        # Calls: ITM when strike < price
+        return "ITM" if strike < current_price else "OTM"
     else:
-        return "OTM"
+        # Puts: ITM when strike > price
+        return "ITM" if strike > current_price else "OTM"
 
 
-def calculate_break_even(strike: float, premium: float) -> float:
+def calculate_break_even(
+    strike: float,
+    premium: float,
+    option_type: str = "put",
+) -> float:
     """
-    Calculate break-even price for a long put position.
+    Calculate break-even price for a long single-leg option position.
 
-    Break-even = Strike Price - Premium Paid
+    Puts:  break-even = strike - premium
+    Calls: break-even = strike + premium
 
     Args:
         strike: Strike price
         premium: Premium paid per share
+        option_type: "put" or "call" (case-insensitive). Defaults to "put"
+                     for backward compatibility.
 
     Returns:
         Break-even stock price
     """
+    ot = str(option_type or "put").strip().lower()
+    if ot == "call":
+        return strike + premium
     return strike - premium
 
 
@@ -179,6 +242,47 @@ def calculate_position_size(
     return int(max_contracts)
 
 
+def estimate_option_value_change(
+    price_change: float,
+    delta: float,
+    gamma: float,
+    current_premium: float,
+    option_type: str = "put",
+) -> float:
+    """
+    Estimate new option premium using delta-gamma approximation.
+
+    New Premium ≈ Old Premium + (Delta * ΔS) + (0.5 * Gamma * ΔS²)
+
+    The caller is expected to pass delta with its natural sign (negative for
+    puts, positive for calls). However, to be robust to callers that pass
+    abs(delta), we coerce the sign based on ``option_type``: for puts we
+    force delta ≤ 0; for calls we force delta ≥ 0. Gamma is always >= 0.
+
+    Args:
+        price_change: Change in underlying stock price (ΔS)
+        delta: Option delta. Sign is corrected by option_type if needed.
+        gamma: Option gamma (>= 0)
+        current_premium: Current option premium
+        option_type: "put" or "call" (case-insensitive). Defaults to "put".
+
+    Returns:
+        Estimated new premium (clamped to >= 0).
+    """
+    ot = str(option_type or "put").strip().lower()
+    # Coerce delta sign to match option_type semantics
+    if ot == "call":
+        signed_delta = abs(delta)
+    else:
+        signed_delta = -abs(delta)
+
+    delta_effect = signed_delta * price_change
+    gamma_effect = 0.5 * abs(gamma) * (price_change ** 2)
+
+    new_premium = current_premium + delta_effect + gamma_effect
+    return max(0, new_premium)  # Premium can't go negative
+
+
 def estimate_put_value_change(
     price_change: float,
     delta: float,
@@ -186,26 +290,17 @@ def estimate_put_value_change(
     current_premium: float,
 ) -> float:
     """
-    Estimate new put premium using delta-gamma approximation.
-
-    New Premium ≈ Old Premium + (Delta * Price Change) + (0.5 * Gamma * Price Change²)
+    Backward-compatible wrapper around ``estimate_option_value_change`` for puts.
 
     Note: For puts, delta is negative, so price decreases increase put value.
-
-    Args:
-        price_change: Change in underlying stock price
-        delta: Option delta (negative for puts)
-        gamma: Option gamma
-        current_premium: Current option premium
-
-    Returns:
-        Estimated new premium
     """
-    delta_effect = delta * price_change
-    gamma_effect = 0.5 * gamma * (price_change ** 2)
-
-    new_premium = current_premium + delta_effect + gamma_effect
-    return max(0, new_premium)  # Premium can't go negative
+    return estimate_option_value_change(
+        price_change=price_change,
+        delta=delta,
+        gamma=gamma,
+        current_premium=current_premium,
+        option_type="put",
+    )
 
 
 def calculate_time_decay(
@@ -255,23 +350,29 @@ def calculate_pl_scenarios(
     premium: float,
     price_range: Optional[list] = None,
     num_points: int = 11,
+    option_type: str = "put",
 ) -> pd.DataFrame:
     """
-    Calculate profit/loss at various stock prices for a long put.
+    Calculate profit/loss at various stock prices for a long single-leg option.
 
     Long Put P/L at expiration:
-    - If Stock Price < Strike: P/L = Strike - Stock Price - Premium
-    - If Stock Price >= Strike: P/L = -Premium (max loss)
+        payoff = max(0, strike - S) - premium
+    Long Call P/L at expiration:
+        payoff = max(0, S - strike) - premium
 
     Args:
         strike: Strike price
         premium: Premium paid per share
         price_range: [min_price, max_price] or None for auto-range
         num_points: Number of price points to calculate
+        option_type: "put" or "call" (case-insensitive). Defaults to "put"
+                     for backward compatibility.
 
     Returns:
         DataFrame with stock_price, pl_per_share, pl_per_contract columns
     """
+    ot = str(option_type or "put").strip().lower()
+
     if price_range is None:
         # Auto-generate range around strike
         price_range = [strike * 0.7, strike * 1.3]
@@ -280,15 +381,14 @@ def calculate_pl_scenarios(
 
     results = []
     for price in prices:
-        if price < strike:
-            # Put is ITM at expiration
-            pl_per_share = strike - price - premium
+        if ot == "call":
+            intrinsic = max(0.0, float(price) - strike)
         else:
-            # Put expires worthless
-            pl_per_share = -premium
+            intrinsic = max(0.0, strike - float(price))
+        pl_per_share = intrinsic - premium
 
         results.append({
-            "stock_price": round(price, 2),
+            "stock_price": round(float(price), 2),
             "pl_per_share": round(pl_per_share, 2),
             "pl_per_contract": round(pl_per_share * 100, 2),
         })

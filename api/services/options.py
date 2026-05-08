@@ -57,23 +57,34 @@ def load_option_chain(
     expiration: Optional[str] = None,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
+    option_type: str = "put",
 ) -> Dict[str, Any]:
     """
-    Load option chain data (filtered to puts if specify expiration).
+    Load option chain data filtered to ``option_type`` ("put", "call", or "both").
 
     Returns:
         {
             "ticker": str,
-            "filters": {"date": "2024-02-01", "expiration": "2024-03-15"},
+            "filters": {"date": "2024-02-01", "expiration": "2024-03-15", "option_type": "put"},
             "data": [{"strike": 100, "mark": 2.5, "delta": -0.45, "implied_volatility": 0.25, ...}],
             "metadata": {"total_contracts": 500, "date_range": "2024-01-01 to 2024-02-01"}
         }
     """
-    # Load puts
+    # Load options of the requested type
     if start_date and end_date:
-        df = options_utils.load_puts(ticker, start_date=start_date, end_date=end_date)
+        df = options_utils.load_options(
+            ticker,
+            option_type=option_type,
+            start_date=start_date,
+            end_date=end_date,
+        )
     else:
-        df = options_utils.load_puts(ticker, start_date=date, end_date=date)
+        df = options_utils.load_options(
+            ticker,
+            option_type=option_type,
+            start_date=date,
+            end_date=date,
+        )
 
     # Filter by date and expiration if specified
     if date:
@@ -112,6 +123,7 @@ def load_option_chain(
             "expiration": expiration,
             "start_date": start_date,
             "end_date": end_date,
+            "option_type": str(option_type or "put").lower(),
         },
         "data": data,
         "metadata": {
@@ -127,6 +139,7 @@ def get_iv_smile(
     ticker: str,
     date: str,
     expiration: str,
+    option_type: str = "put",
 ) -> Dict[str, Any]:
     """
     Get IV smile data (implied volatility vs strike) for visualization.
@@ -136,10 +149,16 @@ def get_iv_smile(
             "ticker": str,
             "date": "2024-02-01",
             "expiration": "2024-03-15",
+            "option_type": "put",
             "data": [{"strike": 95, "implied_volatility": 0.25}, ...]
         }
     """
-    df = options_utils.load_puts(ticker, start_date=date, end_date=date)
+    df = options_utils.load_options(
+        ticker,
+        option_type=option_type,
+        start_date=date,
+        end_date=date,
+    )
     smile_df = options_utils.get_iv_smile_data(df, date, expiration)
 
     data = []
@@ -153,6 +172,7 @@ def get_iv_smile(
         "ticker": ticker,
         "date": date,
         "expiration": expiration,
+        "option_type": str(option_type or "put").lower(),
         "data": data,
     }
 
@@ -163,14 +183,16 @@ def calculate_payoff(
     price_range_min: Optional[float] = None,
     price_range_max: Optional[float] = None,
     num_points: int = 11,
+    option_type: str = "put",
 ) -> Dict[str, Any]:
     """
-    Calculate long put payoff diagram data.
+    Calculate long single-leg option payoff diagram data.
 
     Returns:
         {
             "strike": 100,
             "premium": 2.5,
+            "option_type": "put",
             "data": [{"price": 70, "pl_per_share": 27.5, "pl_per_contract": 2750}, ...],
             "breakeven": 97.5
         }
@@ -185,6 +207,7 @@ def calculate_payoff(
         premium=premium,
         price_range=[price_range_min, price_range_max],
         num_points=num_points,
+        option_type=option_type,
     )
 
     data = []
@@ -195,11 +218,14 @@ def calculate_payoff(
             "pl_per_contract": float(row["pl_per_contract"]),
         })
 
-    breakeven = options_utils.calculate_break_even(strike, premium)
+    breakeven = options_utils.calculate_break_even(
+        strike, premium, option_type=option_type
+    )
 
     return {
         "strike": strike,
         "premium": premium,
+        "option_type": str(option_type or "put").lower(),
         "breakeven": float(breakeven),
         "data": data,
     }
@@ -247,9 +273,13 @@ def estimate_price_change(
     delta: float,
     gamma: float,
     price_change: float,
+    option_type: str = "put",
 ) -> Dict[str, Any]:
     """
     Estimate premium change from stock price move using delta-gamma approximation.
+
+    Delta sign is corrected to match ``option_type`` (calls have positive delta,
+    puts negative).
 
     Returns:
         {
@@ -257,26 +287,37 @@ def estimate_price_change(
             "delta": -0.45,
             "gamma": 0.02,
             "price_change": -5.0,
+            "option_type": "put",
             "estimated_premium": 4.75,
             "delta_effect": 2.25,
             "gamma_effect": 0.25
         }
     """
-    new_premium = options_utils.estimate_put_value_change(
+    ot = str(option_type or "put").strip().lower()
+
+    new_premium = options_utils.estimate_option_value_change(
         price_change=price_change,
         delta=delta,
         gamma=gamma,
         current_premium=current_premium,
+        option_type=ot,
     )
 
-    delta_effect = delta * price_change
-    gamma_effect = 0.5 * gamma * (price_change ** 2)
+    # Match the sign convention used inside estimate_option_value_change
+    if ot == "call":
+        signed_delta = abs(delta)
+    else:
+        signed_delta = -abs(delta)
+
+    delta_effect = signed_delta * price_change
+    gamma_effect = 0.5 * abs(gamma) * (price_change ** 2)
 
     return {
         "current_premium": float(current_premium),
-        "delta": float(delta),
+        "delta": float(signed_delta),
         "gamma": float(gamma),
         "price_change": float(price_change),
+        "option_type": ot,
         "estimated_premium": float(new_premium),
         "delta_effect": float(delta_effect),
         "gamma_effect": float(gamma_effect),
@@ -287,6 +328,7 @@ def classify_moneyness(
     strike: float,
     current_price: float,
     threshold: float = 0.02,
+    option_type: str = "put",
 ) -> Dict[str, Any]:
     """
     Classify option moneyness (ITM, ATM, OTM).
@@ -295,6 +337,7 @@ def classify_moneyness(
         {
             "strike": 100,
             "current_price": 102,
+            "option_type": "put",
             "classification": "OTM",
             "pct_diff": 0.0196
         }
@@ -303,6 +346,7 @@ def classify_moneyness(
         strike=strike,
         current_price=current_price,
         threshold=threshold,
+        option_type=option_type,
     )
 
     pct_diff = (strike - current_price) / current_price
@@ -310,6 +354,7 @@ def classify_moneyness(
     return {
         "strike": float(strike),
         "current_price": float(current_price),
+        "option_type": str(option_type or "put").lower(),
         "classification": classification,
         "pct_diff": float(pct_diff),
     }
