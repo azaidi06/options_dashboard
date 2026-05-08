@@ -23,6 +23,7 @@ logs/
 # OS / IDE
 .DS_Store
 node_modules/
+.claude/
 
 # Environment
 .env

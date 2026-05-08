@@ -2,8 +2,9 @@
  * Put Options Page - dark theme
  */
 import { useState, useEffect } from 'react';
+import { FileSearch, ChevronsRight } from 'lucide-react';
 import { Layout } from '../layout/Layout';
-import { Card, CardLg } from '../common/Card';
+import { CardLg } from '../common/Card';
 import { Input, Select } from '../common/Input';
 import { Button } from '../common/Button';
 import { Tabs, Tab } from '../common/Tabs';
@@ -14,6 +15,7 @@ import { PayoffDiagram } from '../options/PayoffDiagram';
 import { CalculatorPanel } from '../options/CalculatorPanel';
 import { GreeksExplainer } from '../options/GreeksExplainer';
 import { useTickers, useTickerDateRange, useOptionChain, useIVSmile } from '../../hooks/useOptionsData';
+import { recordRecentTicker } from './HomePage';
 
 export function PutOptionsPage() {
   const [selectedTicker, setSelectedTicker] = useState('AMD');
@@ -46,6 +48,11 @@ export function PutOptionsPage() {
       setSelectedExpiration(expirations[0]);
     }
   }, [expirations.length]);
+
+  // Record recent ticker visit
+  useEffect(() => {
+    if (selectedTicker) recordRecentTicker(selectedTicker);
+  }, [selectedTicker]);
 
   // Filter chain data to selected expiration for display
   const filteredChainData = optionChain.data && selectedExpiration
@@ -132,13 +139,15 @@ export function PutOptionsPage() {
           <ErrorCard error={optionChain.error} onRetry={() => optionChain.refetch()} />
         )}
 
-        {/* Loading state */}
+        {/* Loading skeleton — keeps tab strip visible during refetch */}
         {optionChain.loading && (
-          <div className="flex items-center justify-center py-16">
-            <div className="text-center">
-              <div className="spinner-lg mx-auto mb-3" />
-              <p className="text-slate-400 text-sm">Loading options data...</p>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="metric-card">
+                <div className="metric-label">&nbsp;</div>
+                <div className="skeleton h-6 w-3/4" />
+              </div>
+            ))}
           </div>
         )}
 
@@ -150,16 +159,19 @@ export function PutOptionsPage() {
                 <OptionChain ticker={selectedTicker} optionData={filteredChainData} />
               </CardLg>
             ) : (
-              <div className="flex items-center justify-center py-16">
-                <div className="text-center">
-                  <div className="text-4xl mb-3 text-slate-600">◆</div>
-                  <p className="text-slate-400">
-                    {!selectedDate
-                      ? 'Loading date range...'
-                      : 'Select a ticker and date to view the option chain'}
-                  </p>
+              <CardLg>
+                <div className="flex items-center justify-center py-16">
+                  <div className="text-center max-w-md">
+                    <FileSearch className="w-12 h-12 text-slate-600 mx-auto mb-4" strokeWidth={1.5} />
+                    <p className="text-slate-300 font-semibold mb-1">
+                      {!selectedDate ? 'Loading available dates…' : 'No chain loaded yet'}
+                    </p>
+                    <p className="text-slate-500 text-sm">
+                      Pick a ticker, quote date, and expiration above, then click Load Data.
+                    </p>
+                  </div>
                 </div>
-              </div>
+              </CardLg>
             )}
           </Tab>
 
@@ -169,18 +181,23 @@ export function PutOptionsPage() {
                 <IVSmileChart ticker={selectedTicker} ivSmileData={ivSmile.data} />
               </CardLg>
             ) : (
-              <div className="flex items-center justify-center py-16">
-                <div className="text-center">
-                  <div className="text-4xl mb-3 text-slate-600">◆</div>
-                  <p className="text-slate-400">Select data and expiration to view the IV smile</p>
+              <CardLg>
+                <div className="flex items-center justify-center py-16">
+                  <div className="text-center max-w-md">
+                    <ChevronsRight className="w-12 h-12 text-slate-600 mx-auto mb-4" strokeWidth={1.5} />
+                    <p className="text-slate-300 font-semibold mb-1">No IV smile yet</p>
+                    <p className="text-slate-500 text-sm">
+                      Select a ticker, quote date, and expiration to view the IV smile.
+                    </p>
+                  </div>
                 </div>
-              </div>
+              </CardLg>
             )}
           </Tab>
 
           <Tab label="Payoff Diagram">
             <CardLg>
-              <PayoffDiagram />
+              <PayoffDiagram chainData={filteredChainData} />
             </CardLg>
           </Tab>
 
@@ -197,28 +214,8 @@ export function PutOptionsPage() {
           </Tab>
         </Tabs>
 
-        {/* Educational Note */}
-        <div className="info-box mt-10">
-          <h3 className="text-lg font-bold mb-3 text-slate-100">Learning Put Options</h3>
-          <div className="space-y-2 text-sm text-slate-300 leading-relaxed">
-            <p>
-              <strong className="text-slate-100">What's a Put Option?</strong> A contract giving you
-              the right (but not obligation) to sell a stock at a specific price (strike) by a specific
-              date (expiration).
-            </p>
-            <p>
-              <strong className="text-slate-100">Why Use Puts?</strong> Protect against downside risk,
-              speculate on price declines, or generate income by selling puts (advanced).
-            </p>
-            <p>
-              <strong className="text-slate-100">Use This Dashboard To:</strong> Explore real option chains,
-              understand how Greeks affect pricing, calculate payoff scenarios, and learn proper position sizing.
-            </p>
-          </div>
-        </div>
-
         {/* Disclaimer */}
-        <div className="warning-box mt-5">
+        <div className="warning-box mt-8">
           <p className="text-sm text-slate-300">
             <strong className="text-amber-400">Disclaimer:</strong> This dashboard is for educational
             purposes only. Options trading involves significant risk and is not suitable for all investors.

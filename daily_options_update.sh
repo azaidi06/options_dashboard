@@ -20,9 +20,11 @@ if [[ -z "${ALPHAVANTAGE_API_KEY:-}" ]] && [[ -f "${SCRIPT_DIR}/.env" ]]; then
 fi
 LOG_FILE="${LOG_DIR}/daily_options_${DATE_STAMP}.log"
 
-PYTHON="${SCRIPT_DIR}/.venv/bin/python"
+PYTHON="/home/azaidi/anaconda3/envs/options_dashboard/bin/python"
 if [[ ! -x "$PYTHON" ]]; then
-    PYTHON=$(command -v python3)
+    echo "ERROR: options_dashboard conda env not found at $PYTHON" >&2
+    echo "  Recreate with: conda create -n options_dashboard python=3.10 && pip install -r requirements.txt" >&2
+    exit 1
 fi
 
 DATA_DIR="${SCRIPT_DIR}/data/options"

@@ -13,6 +13,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
+import { formatCurrency, formatVolume, formatPercent } from '../../utils/formatters';
 
 function getColor(pctChange) {
   if (pctChange >= 0) return '#10b981';     // emerald
@@ -21,12 +22,38 @@ function getColor(pctChange) {
   return '#ef4444';                          // red
 }
 
-const TOOLTIP_STYLE = {
-  backgroundColor: 'rgba(15, 23, 42, 0.95)',
-  border: '1px solid #334155',
-  borderRadius: '8px',
-  backdropFilter: 'blur(8px)',
-};
+function PriceTooltip({ active, payload, label }) {
+  if (!active || !payload || !payload.length) return null;
+  const row = payload[0]?.payload;
+  if (!row) return null;
+  const distFromHigh = row.pct_change != null ? row.pct_change * 100 : null;
+  return (
+    <div className="bg-slate-900/95 backdrop-blur border border-slate-700 rounded-lg shadow-xl px-3 py-2 text-xs">
+      <div className="font-semibold text-slate-100 mb-1">{label}</div>
+      {row.open != null && (
+        <div className="text-slate-300 tabular-nums">
+          O: {formatCurrency(row.open, 2)} &nbsp; H: {formatCurrency(row.high, 2)} &nbsp;
+          L: {formatCurrency(row.low, 2)} &nbsp; C: {formatCurrency(row.close, 2)}
+        </div>
+      )}
+      {row.open == null && row.close != null && (
+        <div className="text-slate-300 tabular-nums">
+          Close: {formatCurrency(row.close, 2)}
+        </div>
+      )}
+      {row.volume != null && (
+        <div className="text-slate-400 tabular-nums">
+          Vol: {formatVolume(row.volume, 1)}
+        </div>
+      )}
+      {distFromHigh != null && (
+        <div className="text-slate-400 tabular-nums">
+          Distance from {row.lookback_days || ''} rolling high: {formatPercent(distFromHigh, 1)}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function PriceChart({ data, ticker, lookbackDays }) {
   if (!data || data.length === 0) {
@@ -39,6 +66,7 @@ export function PriceChart({ data, ticker, lookbackDays }) {
     const dailyChange = item.close - prevClose;
     return {
       ...item,
+      lookback_days: lookbackDays,
       lineColor: getColor(pctChange),
       volumeColor: dailyChange >= 0 ? 'rgba(16, 185, 129, 0.6)' : 'rgba(239, 68, 68, 0.6)',
     };
@@ -67,18 +95,21 @@ export function PriceChart({ data, ticker, lookbackDays }) {
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
           <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} stroke="#334155" />
-          <YAxis yAxisId="left" tick={{ fontSize: 11, fill: '#94a3b8' }} stroke="#334155" domain={['auto', 'auto']} />
-          <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: '#64748b' }} stroke="#334155" />
-          <Tooltip
-            contentStyle={TOOLTIP_STYLE}
-            labelStyle={{ color: '#e2e8f0' }}
-            itemStyle={{ color: '#cbd5e1' }}
-            formatter={(value, name) => {
-              if (name === 'Close Price') return [`$${value.toFixed(2)}`, 'Close'];
-              if (name === 'Volume') return [`${(value / 1e6).toFixed(1)}M`, 'Volume'];
-              return [value, name];
-            }}
+          <YAxis
+            yAxisId="left"
+            tick={{ fontSize: 11, fill: '#94a3b8' }}
+            stroke="#334155"
+            domain={['auto', 'auto']}
+            tickFormatter={(v) => `$${Number(v).toFixed(0)}`}
           />
+          <YAxis
+            yAxisId="right"
+            orientation="right"
+            tick={{ fontSize: 11, fill: '#64748b' }}
+            stroke="#334155"
+            tickFormatter={(v) => formatVolume(v, 0)}
+          />
+          <Tooltip content={<PriceTooltip />} />
           <Legend wrapperStyle={{ color: '#94a3b8' }} />
 
           <Bar yAxisId="right" dataKey="volume" name="Volume" opacity={0.4} isAnimationActive={false}>
@@ -100,23 +131,42 @@ export function PriceChart({ data, ticker, lookbackDays }) {
         </ComposedChart>
       </ResponsiveContainer>
 
-      {/* Legend */}
-      <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-slate-400">
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-0.5 bg-emerald-500 rounded"></div>
-          <span>At/Above High</span>
+      {/* Legend + gradient bar */}
+      <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-400">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-0.5 bg-emerald-500 rounded" />
+            <span>At/Above High</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-0.5 bg-amber-400 rounded" />
+            <span>-5% to 0%</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-0.5 bg-orange-500 rounded" />
+            <span>-10% to -5%</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-0.5 bg-red-500 rounded" />
+            <span>Below -10%</span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-0.5 bg-amber-400 rounded"></div>
-          <span>-5% to 0%</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-0.5 bg-orange-500 rounded"></div>
-          <span>-10% to -5%</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-0.5 bg-red-500 rounded"></div>
-          <span>Below -10%</span>
+
+        {/* Inline gradient legend explaining the price line colour-bar */}
+        <div className="flex flex-col gap-1">
+          <span className="text-xs text-slate-500">Distance from rolling high</span>
+          <div
+            className="h-2 rounded"
+            style={{
+              background:
+                'linear-gradient(to right, #10b981 0%, #fbbf24 50%, #fb923c 75%, #ef4444 100%)',
+            }}
+            aria-hidden="true"
+          />
+          <div className="flex justify-between text-xs text-slate-500 tabular-nums">
+            <span>0% (green)</span>
+            <span>−30% (red)</span>
+          </div>
         </div>
       </div>
     </div>

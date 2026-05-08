@@ -497,6 +497,13 @@ def merge_all_data(ticker: str, start: pd.Timestamp, end: pd.Timestamp, output_p
         if col in combined.columns:
             combined[col] = pd.to_numeric(combined[col], errors="coerce")
 
+    # Normalize date-like dtypes — daily parquets store these as strings,
+    # the existing combined parquet stores them as datetime64, and concat
+    # preserves both, which breaks sort and the parquet writer.
+    for col in ("date", "expiration"):
+        if col in combined.columns:
+            combined[col] = pd.to_datetime(combined[col], errors="coerce")
+
     # Remove duplicates (same contract on same date)
     if "contractID" in combined.columns and "date" in combined.columns:
         before = len(combined)

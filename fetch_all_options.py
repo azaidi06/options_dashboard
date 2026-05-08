@@ -81,7 +81,7 @@ def run_ticker(ticker: str, start: str, end: str, limit: int | None, merge: bool
     print(f"  FETCHING: {ticker}  (start={actual_start})")
     print(f"{'='*70}")
 
-    subprocess.run(cmd, cwd="/home/azaidi/Desktop/nonsense/fin")
+    subprocess.run(cmd, cwd=str(Path(__file__).parent))
 
     if merge:
         print(f"\n  Merging {ticker}...")
@@ -92,7 +92,7 @@ def run_ticker(ticker: str, start: str, end: str, limit: int | None, merge: bool
             "--end", end,
             "--merge",
         ]
-        subprocess.run(merge_cmd, cwd="/home/azaidi/Desktop/nonsense/fin")
+        subprocess.run(merge_cmd, cwd=str(Path(__file__).parent))
 
     elapsed = time.time() - t0
     return elapsed
@@ -107,7 +107,7 @@ def run_status(ticker: str, start: str, end: str) -> None:
         "--start", actual_start,
         "--end", end,
     ]
-    subprocess.run(cmd, cwd="/home/azaidi/Desktop/nonsense/fin")
+    subprocess.run(cmd, cwd=str(Path(__file__).parent))
 
 
 def main():

@@ -57,3 +57,52 @@ jobs:
             sudo systemctl restart options-dashboard-api
 
             echo "Deploy complete at $(date)"
+
+      # ── Write API key to .env on EC2 ─────────────────────────────────────
+      - name: Write API key to EC2 .env
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_DEPLOY_KEY }}
+          script: |
+            echo "ALPHAVANTAGE_API_KEY=${{ secrets.ALPHAVANTAGE_API_KEY }}" > /home/ubuntu/options_dashboard/.env
+            chmod 600 /home/ubuntu/options_dashboard/.env
+
+      # ── Install daily fetch cron ──────────────────────────────────────────
+      - name: Install daily fetch cron
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_DEPLOY_KEY }}
+          script: |
+            mkdir -p /home/ubuntu/options_dashboard/logs
+
+            # Write the daily fetch script
+            cat > /home/ubuntu/options_dashboard/fetch_daily.sh << 'SCRIPT'
+            #!/bin/bash
+            set -e
+            cd /home/ubuntu/options_dashboard
+            source /home/ubuntu/options_dashboard/.env
+            source venv/bin/activate
+
+            # Fetch last 10 trading days for all tickers (catches any gaps)
+            for TICKER in AMD AAPL NVDA TSLA AMZN MSFT META GOOGL NFLX INTC \
+                          AVGO ORCL ARM PLTR SNOW SMCI TSM ADBE CRM NOW \
+                          AAOI AXTI COHR FN LITE; do
+              echo "=== $(date -u) Fetching $TICKER ==="
+              python backfill_ticker_options.py $TICKER --fetch --limit 10 || true
+              python backfill_ticker_options.py $TICKER --merge || true
+            done
+
+            echo "=== $(date -u) Daily fetch complete ==="
+            SCRIPT
+
+            chmod +x /home/ubuntu/options_dashboard/fetch_daily.sh
+
+            # Install crontab entry (idempotent — removes old entry first)
+            (crontab -l 2>/dev/null | grep -v fetch_daily; echo "0 6 * * 1-5 /home/ubuntu/options_dashboard/fetch_daily.sh >> /home/ubuntu/options_dashboard/logs/daily_fetch.log 2>&1") | crontab -
+
+            echo "Cron installed:"
+            crontab -l | grep fetch_daily

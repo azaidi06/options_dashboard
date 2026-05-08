@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { CardLg, MetricCard } from '../common/Card';
+import { formatCurrency, formatPercent } from '../../utils/formatters';
 
 const TOOLTIP_STYLE = {
   backgroundColor: 'rgba(15, 23, 42, 0.95)',
@@ -18,7 +19,27 @@ const TOOLTIP_STYLE = {
   borderRadius: '8px',
 };
 
-export function DrawdownChart({ ticker, drawdown }) {
+/**
+ * Compute period max-drawdown from a daily price series.
+ * Uses close prices; expects ascending date order.
+ */
+function computePeriodMDD(rows) {
+  if (!rows || rows.length === 0) return 0;
+  let peak = -Infinity;
+  let mdd = 0;
+  for (const row of rows) {
+    const c = row.close;
+    if (c == null) continue;
+    if (c > peak) peak = c;
+    if (peak > 0) {
+      const dd = (c - peak) / peak;
+      if (dd < mdd) mdd = dd;
+    }
+  }
+  return mdd; // negative number, e.g. -0.18
+}
+
+export function DrawdownChart({ ticker, drawdown, priceData = null }) {
   if (drawdown.loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -47,16 +68,22 @@ export function DrawdownChart({ ticker, drawdown }) {
     drawdown_pct: -(d.drawdown_pct || 0),
   }));
 
+  const periodMDD = computePeriodMDD(priceData || []);
+
   return (
     <div>
       <h3 className="text-base font-semibold mb-4 text-slate-200">{ticker} Drawdown Analysis</h3>
 
       {/* Summary metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
         <MetricCard label="Total Events" value={summary.total_events} />
         <MetricCard
-          label="Max Drawdown"
-          value={`${(summary.max_drawdown_pct * 100).toFixed(1)}%`}
+          label="Max Event Drawdown"
+          value={formatPercent(summary.max_drawdown_pct * 100, 1)}
+        />
+        <MetricCard
+          label="Period MDD"
+          value={priceData?.length ? formatPercent(periodMDD * 100, 1) : '—'}
         />
         <MetricCard
           label="Avg Recovery Days"
@@ -87,7 +114,7 @@ export function DrawdownChart({ ticker, drawdown }) {
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
               labelStyle={{ color: '#e2e8f0' }}
-              formatter={(value) => [`${(value * 100).toFixed(2)}%`, 'Drawdown']}
+              formatter={(value) => [formatPercent(value * 100, 2), 'Drawdown']}
               labelFormatter={(label) => `Date: ${label}`}
             />
             <Area
@@ -126,15 +153,15 @@ export function DrawdownChart({ ticker, drawdown }) {
                 {events.map((event, index) => (
                   <tr key={index}>
                     <td>{event.peak_date}</td>
-                    <td className="font-mono tabular-nums">${event.peak_price.toFixed(2)}</td>
+                    <td className="font-mono tabular-nums">{formatCurrency(event.peak_price, 2)}</td>
                     <td>{event.trough_date}</td>
-                    <td className="font-mono tabular-nums">${event.trough_price.toFixed(2)}</td>
+                    <td className="font-mono tabular-nums">{formatCurrency(event.trough_price, 2)}</td>
                     <td className="font-semibold text-red-400 tabular-nums">
-                      {(event.drawdown_pct * 100).toFixed(1)}%
+                      {formatPercent(event.drawdown_pct * 100, 1)}
                     </td>
                     <td className="tabular-nums">{event.days_to_trough}</td>
                     <td className="tabular-nums">
-                      {event.days_to_recovery ? event.days_to_recovery : '\u2014'}
+                      {event.days_to_recovery ? event.days_to_recovery : '—'}
                     </td>
                     <td>{event.recovery_date || <span className="text-slate-500">Not recovered</span>}</td>
                   </tr>

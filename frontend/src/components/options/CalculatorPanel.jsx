@@ -78,6 +78,11 @@ export function CalculatorPanel() {
               </LineChart>
             </ResponsiveContainer>
 
+            <p className="text-xs text-slate-500 italic mt-3">
+              *Linear approximation; real theta accelerates near expiry per Black-Scholes.
+              See <a href="/learn#greeks" className="text-indigo-400 hover:text-indigo-300 underline">Learn → Greeks</a> for details.
+            </p>
+
             <div className="warning-box mt-4">
               <p className="text-sm text-slate-300">
                 <strong className="text-slate-100">Theta Effect:</strong> As expiration approaches, time

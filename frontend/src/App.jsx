@@ -4,6 +4,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { SWRConfig } from 'swr';
 import { HomePage } from './components/pages/HomePage';
+import { LearnPage } from './components/pages/LearnPage';
 import { StockAnalysisPage } from './components/pages/StockAnalysisPage';
 import { PutOptionsPage } from './components/pages/PutOptionsPage';
 import './index.css';
@@ -26,6 +27,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/learn" element={<LearnPage />} />
           <Route path="/stock" element={<StockAnalysisPage />} />
           <Route path="/options" element={<PutOptionsPage />} />
         </Routes>

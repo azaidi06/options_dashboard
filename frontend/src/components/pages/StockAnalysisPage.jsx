@@ -1,10 +1,12 @@
 /**
  * Stock Analysis Page - dark theme
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { FileSearch } from 'lucide-react';
 import { useStockData, useIndicators, useDrawdown, useOpportunities, useTickers } from '../../hooks/useStockData';
 import { Layout } from '../layout/Layout';
-import { Card, CardLg, MetricCard } from '../common/Card';
+import { CardLg, MetricCard } from '../common/Card';
 import { Input, Select } from '../common/Input';
 import { Button } from '../common/Button';
 import { Tabs, Tab } from '../common/Tabs';
@@ -13,18 +15,33 @@ import { PriceChart } from '../stock/PriceChart';
 import { IndicatorsPanel } from '../stock/IndicatorsPanel';
 import { DrawdownChart } from '../stock/DrawdownChart';
 import { OpportunitiesTable } from '../stock/OpportunitiesTable';
+import { formatCurrency, formatVolume } from '../../utils/formatters';
+import { recordRecentTicker } from './HomePage';
 
 const DEFAULT_TICKER = 'AAPL';
 const DEFAULT_LOOKBACK = 30;
 
 export function StockAnalysisPage() {
-  const [ticker, setTicker] = useState(DEFAULT_TICKER);
+  const [searchParams] = useSearchParams();
+  const queryTicker = searchParams.get('ticker');
+
+  const [ticker, setTicker] = useState(queryTicker || DEFAULT_TICKER);
   const [startDate, setStartDate] = useState('2023-01-01');
   const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
   const [lookbackDays, setLookbackDays] = useState(DEFAULT_LOOKBACK);
   const [activeTab, setActiveTab] = useState(0);
   const [entryThreshold, setEntryThreshold] = useState(0.10);
   const [exitThreshold, setExitThreshold] = useState(0.05);
+
+  // React to ?ticker= changes (e.g. from header quick-switch)
+  useEffect(() => {
+    if (queryTicker && queryTicker !== ticker) setTicker(queryTicker);
+  }, [queryTicker]);
+
+  // Record recent ticker visit
+  useEffect(() => {
+    if (ticker) recordRecentTicker(ticker);
+  }, [ticker]);
 
   // Data hooks
   const { tickers } = useTickers();
@@ -34,6 +51,20 @@ export function StockAnalysisPage() {
   const opportunities = useOpportunities(ticker, startDate, endDate, entryThreshold, exitThreshold);
 
   const isLoading = stockData.loading;
+  const hasData = !!stockData.data;
+
+  // Derived metric values (kept here so the skeleton path can render the strip too)
+  let latestClose = null;
+  let periodHigh = null;
+  let periodLow = null;
+  let totalVolume = null;
+  if (hasData) {
+    const rows = stockData.data.data;
+    latestClose = rows[rows.length - 1]?.close;
+    periodHigh = Math.max(...rows.map((d) => d.high));
+    periodLow = Math.min(...rows.map((d) => d.low));
+    totalVolume = rows.reduce((sum, d) => sum + d.volume, 0);
+  }
 
   return (
     <Layout>
@@ -103,39 +134,27 @@ export function StockAnalysisPage() {
           <ErrorCard error={stockData.error} onRetry={() => stockData.refetch()} />
         )}
 
-        {/* Loading state */}
+        {/* Skeleton metric strip while loading (keeps content shape stable) */}
         {isLoading && (
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              <div className="spinner-lg mx-auto mb-3" />
-              <p className="text-slate-400 text-sm">Loading stock data...</p>
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            {['Latest Close', 'Period High', 'Period Low', 'Total Volume'].map((label) => (
+              <div key={label} className="metric-card">
+                <div className="metric-label">{label}</div>
+                <div className="skeleton h-7 w-3/4 mt-1" />
+              </div>
+            ))}
           </div>
         )}
 
         {/* Data display */}
-        {stockData.data && !isLoading && (
+        {hasData && !isLoading && (
           <>
             {/* Summary metrics */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <MetricCard
-                label="Latest Close"
-                value={`$${stockData.data.data[stockData.data.data.length - 1]?.close.toFixed(2)}`}
-              />
-              <MetricCard
-                label="Period High"
-                value={`$${Math.max(...stockData.data.data.map((d) => d.high)).toFixed(2)}`}
-              />
-              <MetricCard
-                label="Period Low"
-                value={`$${Math.min(...stockData.data.data.map((d) => d.low)).toFixed(2)}`}
-              />
-              <MetricCard
-                label="Total Volume"
-                value={`${(
-                  stockData.data.data.reduce((sum, d) => sum + d.volume, 0) / 1e6
-                ).toFixed(1)}M`}
-              />
+              <MetricCard label="Latest Close" value={formatCurrency(latestClose, 2)} />
+              <MetricCard label="Period High" value={formatCurrency(periodHigh, 2)} />
+              <MetricCard label="Period Low" value={formatCurrency(periodLow, 2)} />
+              <MetricCard label="Total Volume" value={formatVolume(totalVolume, 1)} />
             </div>
 
             {/* Tabs */}
@@ -169,6 +188,7 @@ export function StockAnalysisPage() {
                     startDate={startDate}
                     endDate={endDate}
                     drawdown={drawdown}
+                    priceData={stockData.data.data}
                   />
                 </CardLg>
               </Tab>
@@ -195,12 +215,17 @@ export function StockAnalysisPage() {
 
         {/* Empty state */}
         {!isLoading && !stockData.data && !stockData.error && (
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              <div className="text-4xl mb-3 text-slate-600">◈</div>
-              <p className="text-slate-400">Enter a ticker and click "Load Data" to begin analysis</p>
+          <CardLg>
+            <div className="flex items-center justify-center py-16">
+              <div className="text-center max-w-md">
+                <FileSearch className="w-12 h-12 text-slate-600 mx-auto mb-4" strokeWidth={1.5} />
+                <p className="text-slate-300 font-semibold mb-1">No data loaded yet</p>
+                <p className="text-slate-500 text-sm">
+                  Enter a ticker and click <strong>Load Data</strong> to begin analysis.
+                </p>
+              </div>
             </div>
-          </div>
+          </CardLg>
         )}
       </div>
     </Layout>

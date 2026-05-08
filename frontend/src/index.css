@@ -239,7 +239,12 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .text-muted    { @apply text-slate-500; }
 
 /* ─── Tabular numbers for aligned numeric columns ─── */
-.tabular-nums {
+.tabular-nums,
+.num,
+.metric-value,
+.data-table td.num,
+.data-table td.font-mono,
+.data-table tbody td:not(:first-child) {
   font-variant-numeric: tabular-nums;
 }
 
