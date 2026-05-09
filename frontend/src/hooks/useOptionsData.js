@@ -225,12 +225,16 @@ export function useUnderlyingOHLC(ticker, date) {
       const resp = await fetchStockData(t, startStr, endStr, 1);
       const rows = resp?.data || [];
 
-      let row = rows.find((r) => r.date === d);
+      // Sort once so we can look up prior trading days for the n-day
+      // % change calculation below without rescanning.
+      const sortedRows = [...rows].sort((a, b) => a.date.localeCompare(b.date));
+
+      let row = sortedRows.find((r) => r.date === d);
       let isExact = !!row;
-      if (!row && rows.length > 0) {
+      if (!row && sortedRows.length > 0) {
         const target = new Date(d).getTime();
         let bestDiff = Infinity;
-        for (const r of rows) {
+        for (const r of sortedRows) {
           const diff = Math.abs(new Date(r.date).getTime() - target);
           if (diff < bestDiff) {
             bestDiff = diff;
@@ -239,6 +243,21 @@ export function useUnderlyingOHLC(ticker, date) {
         }
       }
       if (!row) return null;
+
+      // n-day % change = (today's close - close N trading days ago) / that
+      // close. We use trading-day indexing rather than calendar-day, so a
+      // weekend/holiday doesn't skew the number.
+      const idx = sortedRows.findIndex((r) => r.date === row.date);
+      const priorClose = (n) => {
+        const prior = idx >= n ? sortedRows[idx - n] : null;
+        return prior?.close ?? null;
+      };
+      const pctChange = (n) => {
+        const p = priorClose(n);
+        if (p == null || p === 0 || row.close == null) return null;
+        return ((row.close - p) / p) * 100;
+      };
+
       return {
         date: row.date,
         open: row.open,
@@ -248,6 +267,8 @@ export function useUnderlyingOHLC(ticker, date) {
         volume: row.volume,
         isExact,
         requestedDate: d,
+        pctChange1d: pctChange(1),
+        pctChange2d: pctChange(2),
       };
     },
     {

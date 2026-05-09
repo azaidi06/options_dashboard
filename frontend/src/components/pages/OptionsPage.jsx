@@ -103,6 +103,33 @@ function UnderlyingOHLCStrip({ ticker, date, ohlc, latest, expirationDate, expir
           </div>
         ))}
       </div>
+      {(ohlc?.pctChange1d != null || ohlc?.pctChange2d != null) && (
+        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-400">
+          {[
+            { label: '1-day Δ', pct: ohlc.pctChange1d },
+            { label: '2-day Δ', pct: ohlc.pctChange2d },
+          ].map(({ label, pct }) =>
+            pct == null ? null : (
+              <span key={label}>
+                <span className="text-slate-500">{label}:</span>{' '}
+                <span
+                  className={
+                    'font-semibold ' +
+                    (pct > 0
+                      ? 'text-emerald-400'
+                      : pct < 0
+                        ? 'text-rose-400'
+                        : 'text-slate-300')
+                  }
+                >
+                  {pct > 0 ? '▲' : pct < 0 ? '▼' : '·'} {pct >= 0 ? '+' : ''}
+                  {pct.toFixed(2)}%
+                </span>
+              </span>
+            )
+          )}
+        </div>
+      )}
       {showCompare && (
         <div className="mt-4 pt-4 border-t border-slate-800/80">
           <div className="flex items-baseline justify-between gap-4 flex-wrap">
