@@ -99,9 +99,20 @@ def load_options(
         )
 
     path = _resolve_parquet_path(ticker)
-    df = pd.read_parquet(path)
 
-    # Normalise type column case-insensitively and filter accordingly
+    # Push the date filter into pyarrow so we only read row groups that
+    # overlap the requested range. Without this, full-history files (100MB+
+    # compressed, ~1-2GB in pandas) get loaded for every single-date query
+    # and OOM small instances.
+    pq_filters = []
+    if start_date:
+        pq_filters.append(("date", ">=", pd.to_datetime(start_date)))
+    if end_date:
+        pq_filters.append(("date", "<=", pd.to_datetime(end_date)))
+    df = pd.read_parquet(path, filters=pq_filters or None)
+
+    # Normalise type column case-insensitively and filter accordingly.
+    # (Done in pandas because the column has mixed casing, e.g. "put"/"PUT".)
     type_upper = df["type"].astype(str).str.upper()
     if ot == "put":
         df = df[type_upper == "PUT"].copy()
@@ -110,15 +121,8 @@ def load_options(
     else:  # both
         df = df[type_upper.isin(["PUT", "CALL"])].copy()
 
-    # Ensure date columns are datetime
     df["date"] = pd.to_datetime(df["date"])
     df["expiration"] = pd.to_datetime(df["expiration"])
-
-    # Apply date filters
-    if start_date:
-        df = df[df["date"] >= pd.to_datetime(start_date)]
-    if end_date:
-        df = df[df["date"] <= pd.to_datetime(end_date)]
 
     return df
 
