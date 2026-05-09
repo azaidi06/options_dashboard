@@ -76,10 +76,13 @@ jobs:
             sudo systemctl restart options-dashboard-api
 
             # Sync nginx config: matters when caching rules change. Test
-            # the config first so a typo can't take the site down.
+            # the config first so a typo can't take the site down. Use
+            # `nginx -s reload` (SIGHUP to the master) rather than
+            # systemctl, which has been flaky on this box.
             sudo cp nginx.conf /etc/nginx/sites-available/options-dashboard
+            sudo ln -sf /etc/nginx/sites-available/options-dashboard /etc/nginx/sites-enabled/options-dashboard
             sudo nginx -t
-            sudo systemctl reload nginx
+            sudo nginx -s reload
 
             # Sanity check: did the service come back up?
             sleep 2
