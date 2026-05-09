@@ -14,6 +14,7 @@ import {
   fetchMoneyness,
   fetchPositionSize,
   fetchTickerCoverage,
+  fetchStockData,
 } from '../utils/api';
 
 /**
@@ -195,6 +196,47 @@ export function useTickerCoverage() {
     loading: isLoading,
     error: error?.message,
     refetch: mutate,
+  };
+}
+
+/**
+ * Hook to fetch the underlying stock's OHLC for a single quote date.
+ * Wraps /api/stock/{ticker} with start == end == date and pulls the row out.
+ */
+export function useUnderlyingOHLC(ticker, date) {
+  const { data, error, isLoading } = useSWR(
+    ticker && date ? ['underlying-ohlc', ticker, date] : null,
+    async ([, t, d]) => {
+      // yfinance treats `end` as exclusive, so we widen the window a few
+      // days and pick the row matching the requested quote date. A small
+      // buffer also covers the case where the chain quote date is a
+      // settlement date that doesn't line up with a yfinance bar.
+      const endDate = new Date(d);
+      endDate.setUTCDate(endDate.getUTCDate() + 4);
+      const endStr = endDate.toISOString().slice(0, 10);
+      const resp = await fetchStockData(t, d, endStr, 1);
+      const rows = resp?.data || [];
+      const row = rows.find((r) => r.date === d);
+      if (!row) return null;
+      return {
+        date: row.date,
+        open: row.open,
+        high: row.high,
+        low: row.low,
+        close: row.close,
+        volume: row.volume,
+      };
+    },
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 300000,
+    }
+  );
+
+  return {
+    data,
+    loading: isLoading,
+    error: error?.message,
   };
 }
 

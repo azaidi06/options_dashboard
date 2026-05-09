@@ -17,8 +17,61 @@ import { IVSmileChart } from '../options/IVSmileChart';
 import { PayoffDiagram } from '../options/PayoffDiagram';
 import { CalculatorPanel } from '../options/CalculatorPanel';
 import { GreeksExplainer } from '../options/GreeksExplainer';
-import { useTickers, useTickerDateRange, useOptionChain, useIVSmile } from '../../hooks/useOptionsData';
+import { useTickers, useTickerDateRange, useOptionChain, useIVSmile, useUnderlyingOHLC } from '../../hooks/useOptionsData';
+import { formatCurrency } from '../../utils/formatters';
 import { recordRecentTicker } from './HomePage';
+
+/**
+ * Compact OHLC strip for the underlying on the selected quote date.
+ * Helps users compare option premiums against where the stock actually
+ * traded that day.
+ */
+function UnderlyingOHLCStrip({ ticker, date, ohlc, loading, error }) {
+  if (!date) return null;
+
+  const cells = [
+    { label: 'Open', value: ohlc?.open },
+    { label: 'High', value: ohlc?.high },
+    { label: 'Low', value: ohlc?.low },
+    { label: 'Close', value: ohlc?.close },
+  ];
+  const range = ohlc?.high != null && ohlc?.low != null ? ohlc.high - ohlc.low : null;
+
+  return (
+    <CardLg className="mb-6">
+      <div className="flex items-baseline justify-between mb-3 gap-3 flex-wrap">
+        <h3 className="text-sm font-semibold text-slate-300">
+          {ticker} on {date}
+          {range != null && (
+            <span className="ml-2 text-xs font-normal text-slate-500">
+              · range {formatCurrency(range)}
+            </span>
+          )}
+        </h3>
+        <span className="text-xs text-slate-500">Underlying daily OHLC</span>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {cells.map(({ label, value }) => (
+          <div key={label} className="metric-card p-3">
+            <div className="metric-label">{label}</div>
+            {loading ? (
+              <div className="skeleton h-6 w-2/3" />
+            ) : value != null ? (
+              <div className="metric-value text-lg">{formatCurrency(value)}</div>
+            ) : (
+              <div className="text-slate-500 text-sm">—</div>
+            )}
+          </div>
+        ))}
+      </div>
+      {error && (
+        <p className="mt-3 text-xs text-amber-400">
+          Could not load underlying price for this date: {error}
+        </p>
+      )}
+    </CardLg>
+  );
+}
 
 /**
  * Put/Call segmented control.
@@ -84,6 +137,7 @@ export function OptionsPage() {
   // Fetch chain with just ticker + date (expiration is optional for getting available expirations)
   const optionChain = useOptionChain(selectedTicker, selectedDate, selectedExpiration, optionType);
   const ivSmile = useIVSmile(selectedTicker, selectedDate, selectedExpiration, optionType);
+  const underlying = useUnderlyingOHLC(selectedTicker, selectedDate);
 
   // Set date to max available when dateRange loads
   useEffect(() => {
@@ -198,6 +252,15 @@ export function OptionsPage() {
             </div>
           )}
         </CardLg>
+
+        {/* Underlying OHLC for the selected quote date */}
+        <UnderlyingOHLCStrip
+          ticker={selectedTicker}
+          date={selectedDate}
+          ohlc={underlying.data}
+          loading={underlying.loading}
+          error={underlying.error}
+        />
 
         {/* Error Messages */}
         {optionChain.error && (
