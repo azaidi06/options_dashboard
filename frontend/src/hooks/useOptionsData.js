@@ -244,6 +244,44 @@ export function useUnderlyingOHLC(ticker, date) {
 }
 
 /**
+ * Hook to fetch the most recent available bar for a ticker (latest close).
+ * Used to show "where is the stock now" alongside a historical chain so
+ * users can eyeball whether a past option would have ended up profitable.
+ */
+export function useUnderlyingLatest(ticker) {
+  const { data, error, isLoading } = useSWR(
+    ticker ? ['underlying-latest', ticker] : null,
+    async ([, t]) => {
+      const today = new Date();
+      const start = new Date(today);
+      start.setUTCDate(start.getUTCDate() - 10);
+      const startStr = start.toISOString().slice(0, 10);
+      const end = new Date(today);
+      end.setUTCDate(end.getUTCDate() + 1);
+      const endStr = end.toISOString().slice(0, 10);
+      const resp = await fetchStockData(t, startStr, endStr, 1);
+      const rows = resp?.data || [];
+      if (!rows.length) return null;
+      const row = rows[rows.length - 1];
+      return {
+        date: row.date,
+        close: row.close,
+      };
+    },
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 60000,
+    }
+  );
+
+  return {
+    data,
+    loading: isLoading,
+    error: error?.message,
+  };
+}
+
+/**
  * Hook to calculate position size
  */
 export function usePositionSize(accountValue, riskPercent, premiumPerContract) {

@@ -17,8 +17,8 @@ import { IVSmileChart } from '../options/IVSmileChart';
 import { PayoffDiagram } from '../options/PayoffDiagram';
 import { CalculatorPanel } from '../options/CalculatorPanel';
 import { GreeksExplainer } from '../options/GreeksExplainer';
-import { useTickers, useTickerDateRange, useOptionChain, useIVSmile, useUnderlyingOHLC } from '../../hooks/useOptionsData';
-import { formatCurrency } from '../../utils/formatters';
+import { useTickers, useTickerDateRange, useOptionChain, useIVSmile, useUnderlyingOHLC, useUnderlyingLatest } from '../../hooks/useOptionsData';
+import { formatCurrency, formatPercent } from '../../utils/formatters';
 import { recordRecentTicker } from './HomePage';
 
 /**
@@ -26,7 +26,7 @@ import { recordRecentTicker } from './HomePage';
  * Helps users compare option premiums against where the stock actually
  * traded that day.
  */
-function UnderlyingOHLCStrip({ ticker, date, ohlc, loading, error }) {
+function UnderlyingOHLCStrip({ ticker, date, ohlc, latest, loading, error }) {
   if (!date) return null;
 
   const cells = [
@@ -36,6 +36,26 @@ function UnderlyingOHLCStrip({ ticker, date, ohlc, loading, error }) {
     { label: 'Close', value: ohlc?.close },
   ];
   const range = ohlc?.high != null && ohlc?.low != null ? ohlc.high - ohlc.low : null;
+
+  // "Latest" comparison only makes sense if it's a different day than the
+  // selected quote date and we have both closes to diff.
+  const showLatest =
+    latest?.close != null &&
+    latest?.date &&
+    latest.date !== date &&
+    ohlc?.close != null &&
+    ohlc.close !== 0;
+  // formatPercent doesn't multiply by 100 — pass an already-scaled value.
+  const pctMove = showLatest ? ((latest.close - ohlc.close) / ohlc.close) * 100 : null;
+  const moveColor =
+    pctMove == null
+      ? 'text-slate-400'
+      : pctMove > 0
+        ? 'text-emerald-400'
+        : pctMove < 0
+          ? 'text-rose-400'
+          : 'text-slate-400';
+  const moveArrow = pctMove == null ? '' : pctMove > 0 ? '▲' : pctMove < 0 ? '▼' : '·';
 
   return (
     <CardLg className="mb-6">
@@ -48,7 +68,19 @@ function UnderlyingOHLCStrip({ ticker, date, ohlc, loading, error }) {
             </span>
           )}
         </h3>
-        <span className="text-xs text-slate-500">Underlying daily OHLC</span>
+        {showLatest ? (
+          <span className="text-xs text-slate-400">
+            Latest:{' '}
+            <span className="font-semibold text-slate-200">{formatCurrency(latest.close)}</span>{' '}
+            <span className="text-slate-500">on {latest.date}</span>{' '}
+            <span className={`font-semibold ${moveColor}`}>
+              {moveArrow} {formatPercent(pctMove)}
+            </span>{' '}
+            <span className="text-slate-500">vs that day's close</span>
+          </span>
+        ) : (
+          <span className="text-xs text-slate-500">Underlying daily OHLC</span>
+        )}
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {cells.map(({ label, value }) => (
@@ -138,6 +170,7 @@ export function OptionsPage() {
   const optionChain = useOptionChain(selectedTicker, selectedDate, selectedExpiration, optionType);
   const ivSmile = useIVSmile(selectedTicker, selectedDate, selectedExpiration, optionType);
   const underlying = useUnderlyingOHLC(selectedTicker, selectedDate);
+  const underlyingLatest = useUnderlyingLatest(selectedTicker);
 
   // Set date to max available when dateRange loads
   useEffect(() => {
@@ -258,6 +291,7 @@ export function OptionsPage() {
           ticker={selectedTicker}
           date={selectedDate}
           ohlc={underlying.data}
+          latest={underlyingLatest.data}
           loading={underlying.loading}
           error={underlying.error}
         />
