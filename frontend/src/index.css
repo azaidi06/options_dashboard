@@ -95,17 +95,24 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 /* ─── Metric Cards ─── */
-.metric-card {
-  @apply bg-slate-900/60 border border-slate-800 rounded-xl p-5
-         hover:border-slate-700 transition-all duration-200;
-}
+/* Wrap in @layer components so Tailwind utilities (text-emerald-400 etc.)
+   can cleanly override the default slate-50 color on metric-value. Without
+   the layer, metric-value sits in the unlayered cascade and beats any
+   utility class regardless of source order, which silently swallows
+   green/red P/L coloring on cards. */
+@layer components {
+  .metric-card {
+    @apply bg-slate-900/60 border border-slate-800 rounded-xl p-5
+           hover:border-slate-700 transition-all duration-200;
+  }
 
-.metric-value {
-  @apply text-2xl font-bold text-slate-50 tabular-nums tracking-tight;
-}
+  .metric-value {
+    @apply text-2xl font-bold text-slate-50 tabular-nums tracking-tight;
+  }
 
-.metric-label {
-  @apply text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2;
+  .metric-label {
+    @apply text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2;
+  }
 }
 
 /* ─── Tables ─── */
