@@ -368,6 +368,7 @@ export function OptionsPage() {
                   dailyCloses={expirationInPast ? lifetimeDaily.data : null}
                   expirationDate={expirationInPast ? expirationDateOnly : null}
                   quoteDate={expirationInPast ? selectedDate : null}
+                  quoteClose={underlying.data?.close ?? null}
                 />
               </CardLg>
             ) : (

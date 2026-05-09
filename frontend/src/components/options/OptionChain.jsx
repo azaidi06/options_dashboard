@@ -296,6 +296,11 @@ function isLiquidRow(opt) {
   return oi > 50 && iv < 100;
 }
 
+function breakEvenFor(strike, premium, optionType) {
+  if (strike == null || premium == null) return null;
+  return optionType === 'call' ? strike + premium : strike - premium;
+}
+
 export function OptionChain({
   ticker,
   optionData,
@@ -303,6 +308,7 @@ export function OptionChain({
   dailyCloses = null,
   expirationDate = null,
   quoteDate = null,
+  quoteClose = null,
 }) {
   const [strikeFilter, setStrikeFilter] = useState('');
   const [deltaFilter, setDeltaFilter] = useState('');
@@ -312,6 +318,7 @@ export function OptionChain({
   const [expandedStrike, setExpandedStrike] = useState(null);
 
   const showItmColumn = Array.isArray(dailyCloses) && dailyCloses.length > 0;
+  const showBreakEvenColumn = quoteClose != null && quoteClose > 0;
 
   if (!optionData || !optionData.data) {
     return (
@@ -446,6 +453,21 @@ export function OptionChain({
                   ['mark', 'Mark'],
                   ['bid', 'Bid'],
                   ['ask', 'Ask'],
+                ].map(([key, label]) => (
+                  <th
+                    key={key}
+                    onClick={() => handleSort(key)}
+                    className="cursor-pointer hover:text-slate-200 select-none"
+                  >
+                    {label} <SortIcon column={key} />
+                  </th>
+                ))}
+                {showBreakEvenColumn && (
+                  <th title={`Break-even = ${optionType === 'call' ? 'strike + mark' : 'strike − mark'}; % shows move from underlying close on the quote date needed to reach it`}>
+                    BE / %
+                  </th>
+                )}
+                {[
                   ['implied_volatility', 'IV'],
                   ['delta', 'Delta'],
                   ['gamma', 'Gamma'],
@@ -467,7 +489,7 @@ export function OptionChain({
             <tbody>
               {filteredData.length === 0 ? (
                 <tr>
-                  <td colSpan={showItmColumn ? 12 : 11} className="text-center text-slate-500 py-6">
+                  <td colSpan={11 + (showItmColumn ? 1 : 0) + (showBreakEvenColumn ? 1 : 0)} className="text-center text-slate-500 py-6">
                     No contracts match the selected filters
                   </td>
                 </tr>
@@ -526,6 +548,41 @@ export function OptionChain({
                         <td className="font-mono text-red-400">
                           {noQuote ? '—' : formatCurrency(opt.ask, 2)}
                         </td>
+                        {showBreakEvenColumn && (() => {
+                          const be = breakEvenFor(opt.strike, opt.mark, optionType);
+                          if (be == null || noQuote) {
+                            return <td className="text-slate-500">—</td>;
+                          }
+                          const pct = ((be - quoteClose) / quoteClose) * 100;
+                          // For a long buyer to reach BE, the underlying
+                          // needs to move toward BE. "Toward" means up for
+                          // calls, down for puts; render that direction
+                          // with a sign that matches the user's mental
+                          // model: positive => stock needs to rise, negative
+                          // => stock needs to fall.
+                          const directional =
+                            optionType === 'call' ? pct : -pct;
+                          const alreadyPast = directional <= 0;
+                          const colorClass = alreadyPast
+                            ? 'text-emerald-400'
+                            : 'text-amber-400';
+                          const arrow =
+                            optionType === 'call' ? '▲' : '▼';
+                          return (
+                            <td className="font-mono">
+                              <span className="text-slate-200">
+                                {formatCurrency(be, 2)}
+                              </span>
+                              <span className={`ml-2 text-xs ${colorClass}`}>
+                                {alreadyPast ? '✓ past' : (
+                                  <>
+                                    {arrow} {Math.abs(directional).toFixed(2)}%
+                                  </>
+                                )}
+                              </span>
+                            </td>
+                          );
+                        })()}
                         <td>
                           {ivPct > 200
                             ? formatPercent(ivPct, 0)
@@ -554,7 +611,7 @@ export function OptionChain({
                       </tr>
                       {showItmColumn && isExpanded && (
                         <tr className="bg-slate-900/40">
-                          <td colSpan={12} className="p-4">
+                          <td colSpan={11 + (showItmColumn ? 1 : 0) + (showBreakEvenColumn ? 1 : 0)} className="p-4">
                             <ItmSparkline
                               ticker={ticker}
                               dailyCloses={dailyCloses}
