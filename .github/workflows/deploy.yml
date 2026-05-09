@@ -75,14 +75,24 @@ jobs:
             sudo systemctl daemon-reload
             sudo systemctl restart options-dashboard-api
 
-            # Sync nginx config: matters when caching rules change. Test
-            # the config first so a typo can't take the site down. Use
-            # `nginx -s reload` (SIGHUP to the master) rather than
-            # systemctl, which has been flaky on this box.
+            # Sync nginx config. Test syntax first so a typo can't take
+            # the site down. nginx on this box has been started outside
+            # systemd's tracking (PID file is empty, so `nginx -s reload`
+            # and `systemctl reload nginx` both fail). Send SIGHUP
+            # directly to the master process via pkill, falling back to
+            # a hard restart if no master is alive.
             sudo cp nginx.conf /etc/nginx/sites-available/options-dashboard
             sudo ln -sf /etc/nginx/sites-available/options-dashboard /etc/nginx/sites-enabled/options-dashboard
             sudo nginx -t
-            sudo nginx -s reload
+            if pgrep -x nginx > /dev/null; then
+              sudo pkill -HUP -x nginx
+              echo "nginx reloaded via SIGHUP"
+            else
+              sudo nginx
+              echo "nginx started (no master process was running)"
+            fi
+            sleep 1
+            curl -fsS http://localhost/health > /dev/null && echo "nginx health check ok"
 
             # Sanity check: did the service come back up?
             sleep 2
