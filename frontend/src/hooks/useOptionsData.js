@@ -207,14 +207,17 @@ export function useUnderlyingOHLC(ticker, date) {
   const { data, error, isLoading } = useSWR(
     ticker && date ? ['underlying-ohlc', ticker, date] : null,
     async ([, t, d]) => {
-      // yfinance treats `end` as exclusive, so we widen the window a few
-      // days and pick the row matching the requested quote date. A small
-      // buffer also covers the case where the chain quote date is a
-      // settlement date that doesn't line up with a yfinance bar.
+      // yfinance has timezone-edge quirks where `start=d` sometimes drops
+      // the row for d itself, and `end` is exclusive. Widen the window a
+      // few days on both sides and pick the row that matches the
+      // requested quote date exactly.
+      const startDate = new Date(d);
+      startDate.setUTCDate(startDate.getUTCDate() - 3);
       const endDate = new Date(d);
       endDate.setUTCDate(endDate.getUTCDate() + 4);
+      const startStr = startDate.toISOString().slice(0, 10);
       const endStr = endDate.toISOString().slice(0, 10);
-      const resp = await fetchStockData(t, d, endStr, 1);
+      const resp = await fetchStockData(t, startStr, endStr, 1);
       const rows = resp?.data || [];
       const row = rows.find((r) => r.date === d);
       if (!row) return null;
