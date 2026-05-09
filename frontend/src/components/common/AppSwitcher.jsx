@@ -14,13 +14,10 @@ export default function AppSwitcher() {
     >
       {APPS.map((app) => {
         const active = app.id === CURRENT;
-        const isExternal = app.href.startsWith("http");
         return (
           <a
             key={app.id}
             href={app.href}
-            target={isExternal ? "_blank" : undefined}
-            rel={isExternal ? "noopener noreferrer" : undefined}
             aria-current={active ? "page" : undefined}
             className={
               "px-3 py-1 text-xs font-medium rounded-full transition-colors " +
