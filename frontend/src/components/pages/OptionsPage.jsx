@@ -76,6 +76,11 @@ function UnderlyingOHLCStrip({ ticker, date, ohlc, latest, expirationDate, expir
       <div className="flex items-baseline justify-between mb-3 gap-3 flex-wrap">
         <h3 className="text-sm font-semibold text-slate-300">
           {ticker} on {date}
+          {ohlc?.isExact === false && ohlc?.date && ohlc.date !== date && (
+            <span className="ml-2 text-xs font-normal text-amber-400">
+              (showing {ohlc.date} — closest available)
+            </span>
+          )}
           {range != null && (
             <span className="ml-2 text-xs font-normal text-slate-500">
               · range {formatCurrency(range)}

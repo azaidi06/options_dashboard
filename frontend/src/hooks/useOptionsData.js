@@ -208,19 +208,36 @@ export function useUnderlyingOHLC(ticker, date) {
   const { data, error, isLoading } = useSWR(
     ticker && date ? ['underlying-ohlc', ticker, date] : null,
     async ([, t, d]) => {
-      // yfinance has timezone-edge quirks where `start=d` sometimes drops
-      // the row for d itself, and `end` is exclusive. Widen the window a
-      // few days on both sides and pick the row that matches the
-      // requested quote date exactly.
+      // yfinance occasionally has data gaps -- e.g. real trading days
+      // where Yahoo just doesn't return a row, even though
+      // AlphaVantage (used for option chain quote dates) does. Widen
+      // the window on both sides so we have something to fall back on,
+      // then prefer the exact-date row but accept the nearest available
+      // trading day if none exists. The hook returns `isExact: false`
+      // in that case so the UI can show a 'closest trading day' note
+      // instead of silently showing wrong-date numbers.
       const startDate = new Date(d);
-      startDate.setUTCDate(startDate.getUTCDate() - 3);
+      startDate.setUTCDate(startDate.getUTCDate() - 5);
       const endDate = new Date(d);
-      endDate.setUTCDate(endDate.getUTCDate() + 4);
+      endDate.setUTCDate(endDate.getUTCDate() + 5);
       const startStr = startDate.toISOString().slice(0, 10);
       const endStr = endDate.toISOString().slice(0, 10);
       const resp = await fetchStockData(t, startStr, endStr, 1);
       const rows = resp?.data || [];
-      const row = rows.find((r) => r.date === d);
+
+      let row = rows.find((r) => r.date === d);
+      let isExact = !!row;
+      if (!row && rows.length > 0) {
+        const target = new Date(d).getTime();
+        let bestDiff = Infinity;
+        for (const r of rows) {
+          const diff = Math.abs(new Date(r.date).getTime() - target);
+          if (diff < bestDiff) {
+            bestDiff = diff;
+            row = r;
+          }
+        }
+      }
       if (!row) return null;
       return {
         date: row.date,
@@ -229,6 +246,8 @@ export function useUnderlyingOHLC(ticker, date) {
         low: row.low,
         close: row.close,
         volume: row.volume,
+        isExact,
+        requestedDate: d,
       };
     },
     {
