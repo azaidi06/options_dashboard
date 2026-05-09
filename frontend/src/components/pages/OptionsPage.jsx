@@ -219,12 +219,18 @@ export function OptionsPage() {
     ? [...new Set(optionChain.data.data.map((opt) => opt.expiration))].sort()
     : [];
 
-  // Auto-select first expiration when list populates and none is selected
+  // Auto-select first expiration whenever the list of expirations changes
+  // and the user hasn't picked one. Keying on a stable join (not just
+  // length) is important: chains for different quote dates often have the
+  // same NUMBER of expirations but different contents, and a length-only
+  // dep would silently skip the re-select, leaving the page stuck in a
+  // half-loaded state that only a hard refresh recovers from.
+  const expirationsKey = expirations.join(',');
   useEffect(() => {
     if (expirations.length > 0 && !selectedExpiration) {
       setSelectedExpiration(expirations[0]);
     }
-  }, [expirations.length]);
+  }, [expirationsKey, selectedExpiration]);
 
   // Reset expiration when option type changes (chain repopulates)
   useEffect(() => {
