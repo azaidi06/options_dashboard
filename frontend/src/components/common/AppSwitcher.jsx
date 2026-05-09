@@ -1,6 +1,6 @@
 const APPS = [
-  { id: "war-markets", label: "Money + War", href: "https://money4war.com/" },
-  { id: "tech-spend", label: "Tech Spend", href: "https://money4war.com/tech-spend/" },
+  { id: "war-markets", label: "Money + War", href: "https://www.money4war.com/" },
+  { id: "tech-spend", label: "Tech Spend", href: "https://www.money4war.com/tech-spend/" },
   { id: "options", label: "Options", href: "/" },
 ];
 
