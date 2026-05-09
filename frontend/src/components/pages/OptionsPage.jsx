@@ -37,16 +37,30 @@ function UnderlyingOHLCStrip({ ticker, date, ohlc, latest, expirationDate, expir
   ];
   const range = ohlc?.high != null && ohlc?.low != null ? ohlc.high - ohlc.low : null;
 
-  // "Latest" comparison only makes sense if it's a different day than the
-  // selected quote date and we have both closes to diff.
-  const showLatest =
-    latest?.close != null &&
-    latest?.date &&
-    latest.date !== date &&
-    ohlc?.close != null &&
-    ohlc.close !== 0;
-  // formatPercent doesn't multiply by 100 — pass an already-scaled value.
-  const pctMove = showLatest ? ((latest.close - ohlc.close) / ohlc.close) * 100 : null;
+  // Decide which comparison to show. If we know the expiration is in the
+  // past (parent only sets expirationDate in that case), show the close on
+  // expiry; otherwise show today's close. This means the comparison panel
+  // is *always* meaningful for the selected chain — there's no state
+  // where it silently disappears just because the expiration auto-select
+  // hasn't fired yet, which was the source of the "card no longer
+  // populates after I change the quote date" complaint.
+  const isExpired = !!expirationDate;
+  const compareSource = isExpired ? expirationOhlc : latest;
+  const compareLoading = isExpired
+    ? expirationDate && (expirationOhlc?.close == null)
+    : !latest?.close;
+  const compareDate = compareSource?.date;
+  const compareClose = compareSource?.close;
+  // Hide the comparison when there's literally nothing to compare against
+  // (e.g., quote date is the most recent bar we have for an unexpired
+  // chain, so latest.date === date — the move is zero by definition).
+  const sameDay = compareDate && compareDate === date;
+  const showCompare = !sameDay && (compareLoading || compareClose != null);
+
+  const pctMove =
+    compareClose != null && ohlc?.close != null && ohlc.close !== 0
+      ? ((compareClose - ohlc.close) / ohlc.close) * 100
+      : null;
   const moveColor =
     pctMove == null
       ? 'text-slate-400'
@@ -55,7 +69,7 @@ function UnderlyingOHLCStrip({ ticker, date, ohlc, latest, expirationDate, expir
         : pctMove < 0
           ? 'text-rose-400'
           : 'text-slate-400';
-  const moveArrow = pctMove == null ? '' : pctMove > 0 ? '▲' : pctMove < 0 ? '▼' : '·';
+  const moveArrow = pctMove == null ? '·' : pctMove > 0 ? '▲' : pctMove < 0 ? '▼' : '·';
 
   return (
     <CardLg className="mb-6">
@@ -68,19 +82,7 @@ function UnderlyingOHLCStrip({ ticker, date, ohlc, latest, expirationDate, expir
             </span>
           )}
         </h3>
-        {showLatest ? (
-          <span className="text-xs text-slate-400">
-            Latest:{' '}
-            <span className="font-semibold text-slate-200">{formatCurrency(latest.close)}</span>{' '}
-            <span className="text-slate-500">on {latest.date}</span>{' '}
-            <span className={`font-semibold ${moveColor}`}>
-              {moveArrow} {formatPercent(pctMove)}
-            </span>{' '}
-            <span className="text-slate-500">vs that day's close</span>
-          </span>
-        ) : (
-          <span className="text-xs text-slate-500">Underlying daily OHLC</span>
-        )}
+        <span className="text-xs text-slate-500">Underlying daily OHLC</span>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {cells.map(({ label, value }) => (
@@ -96,23 +98,37 @@ function UnderlyingOHLCStrip({ ticker, date, ohlc, latest, expirationDate, expir
           </div>
         ))}
       </div>
-      {expirationDate && expirationOhlc?.close != null && (
-        <div className="mt-3 text-xs text-slate-400 flex flex-wrap gap-x-4 gap-y-1">
-          <span>
-            <span className="text-slate-500">Expired</span>{' '}
-            <span className="text-slate-200 font-semibold">{expirationDate}</span>{' '}
-            <span className="text-slate-500">at</span>{' '}
-            <span className="text-slate-200 font-semibold">
-              {formatCurrency(expirationOhlc.close)}
-            </span>
-          </span>
-          {ohlc?.close != null && expirationOhlc.close !== 0 && (
-            <span className="text-slate-500">
-              ({((expirationOhlc.close - ohlc.close) / ohlc.close >= 0 ? '+' : '') +
-                (((expirationOhlc.close - ohlc.close) / ohlc.close) * 100).toFixed(2)}
-              % over the option's life)
-            </span>
-          )}
+      {showCompare && (
+        <div className="mt-4 pt-4 border-t border-slate-800/80">
+          <div className="flex items-baseline justify-between gap-4 flex-wrap">
+            <div>
+              <div className="metric-label mb-1">
+                {isExpired ? 'Price at expiration' : 'Price today'}
+              </div>
+              {compareLoading ? (
+                <div className="skeleton h-7 w-32" />
+              ) : (
+                <div className="flex items-baseline gap-3 flex-wrap">
+                  <span className="metric-value text-2xl">
+                    {compareClose != null ? formatCurrency(compareClose) : '—'}
+                  </span>
+                  {compareDate && (
+                    <span className="text-xs text-slate-500">on {compareDate}</span>
+                  )}
+                </div>
+              )}
+            </div>
+            {pctMove != null && (
+              <div className="text-right">
+                <div className="metric-label mb-1">
+                  vs {date} close
+                </div>
+                <div className={`text-lg font-semibold ${moveColor}`}>
+                  {moveArrow} {pctMove >= 0 ? '+' : ''}{pctMove.toFixed(2)}%
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
       {error && (
