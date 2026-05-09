@@ -15,6 +15,7 @@ import {
   fetchPositionSize,
   fetchTickerCoverage,
   fetchStockData,
+  fetchContractHistory,
 } from '../utils/api';
 
 /**
@@ -230,6 +231,30 @@ export function useUnderlyingOHLC(ticker, date) {
         volume: row.volume,
       };
     },
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 300000,
+    }
+  );
+
+  return {
+    data,
+    loading: isLoading,
+    error: error?.message,
+  };
+}
+
+/**
+ * Hook to fetch the per-day premium history for a single specific contract.
+ * Used by the chain row's expanded P/L sparkline so we can show realized
+ * daily P/L using actual market prices, not just intrinsic value.
+ */
+export function useContractHistory(ticker, strike, expiration, optionType, startDate, endDate) {
+  const enabled =
+    ticker && strike != null && expiration && optionType && startDate && endDate;
+  const { data, error, isLoading } = useSWR(
+    enabled ? ['contract-history', ticker, strike, expiration, optionType, startDate, endDate] : null,
+    () => fetchContractHistory(ticker, strike, expiration, optionType, startDate, endDate),
     {
       revalidateOnFocus: false,
       dedupingInterval: 300000,

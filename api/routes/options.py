@@ -9,6 +9,7 @@ from ..services.options import (
     get_date_range,
     load_option_chain,
     get_iv_smile,
+    get_contract_history,
     calculate_payoff,
     calculate_time_decay,
     estimate_price_change,
@@ -113,6 +114,36 @@ async def get_smile(
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error getting IV smile: {str(e)}")
+
+
+@router.get("/{ticker}/contract-history")
+async def contract_history(
+    ticker: str,
+    strike: float = Query(..., description="Strike price"),
+    expiration: str = Query(..., description="Expiration date (YYYY-MM-DD)"),
+    option_type: str = Query("put", description="Option type: put|call"),
+    start_date: str = Query(..., description="Start date (YYYY-MM-DD)"),
+    end_date: str = Query(..., description="End date (YYYY-MM-DD)"),
+):
+    """
+    Per-day premium series for one specific (strike, expiration, type)
+    contract. Powers the chain row's expandable P/L sparkline.
+    """
+    ot = _validate_option_type(option_type, allow_both=False)
+    try:
+        result = get_contract_history(
+            ticker=ticker,
+            strike=strike,
+            expiration=expiration,
+            option_type=ot,
+            start_date=start_date,
+            end_date=end_date,
+        )
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error loading contract history: {str(e)}")
 
 
 @router.get("/payoff")

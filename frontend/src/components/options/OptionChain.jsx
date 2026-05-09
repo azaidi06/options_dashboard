@@ -7,13 +7,23 @@ import { LineChart, Line, ReferenceLine, Tooltip, ResponsiveContainer, YAxis } f
 import { Input } from '../common/Input';
 import { CardLg } from '../common/Card';
 import { formatCurrency, formatPercent, formatGreek } from '../../utils/formatters';
+import { useContractHistory } from '../../hooks/useOptionsData';
 
 function isITM(close, strike, optionType) {
   if (close == null || strike == null) return false;
   return optionType === 'call' ? close > strike : close < strike;
 }
 
-function ItmSparkline({ dailyCloses, strike, optionType, expirationDate }) {
+function ItmSparkline({
+  ticker,
+  dailyCloses,
+  strike,
+  optionType,
+  expirationDate,
+  quoteDate,
+  entryMark,
+  entryAsk,
+}) {
   const series = dailyCloses.map((r) => ({
     date: r.date,
     close: r.close,
@@ -22,6 +32,18 @@ function ItmSparkline({ dailyCloses, strike, optionType, expirationDate }) {
   const itmCount = series.filter((p) => p.itm).length;
   const total = series.length;
   const expirationItm = total > 0 && series[total - 1].itm;
+
+  // Fetch the per-day premium history for this contract. The hook is
+  // wired to its own SWR key, so each row that gets expanded fetches
+  // independently and is cached for 5 minutes.
+  const history = useContractHistory(
+    ticker,
+    strike,
+    expirationDate,
+    optionType,
+    quoteDate,
+    expirationDate
+  );
 
   return (
     <div>
@@ -99,6 +121,164 @@ function ItmSparkline({ dailyCloses, strike, optionType, expirationDate }) {
           </LineChart>
         </ResponsiveContainer>
       </div>
+      <PnlSparkline
+        history={history}
+        entryMark={entryMark}
+        entryAsk={entryAsk}
+        expirationDate={expirationDate}
+      />
+    </div>
+  );
+}
+
+function PnlSparkline({ history, entryMark, entryAsk, expirationDate }) {
+  // Use mid (mark) as the "entry premium" by default; users buying long
+  // would actually pay closer to ask, so we surface both summaries.
+  const entry = entryMark != null && entryMark > 0 ? entryMark : entryAsk;
+  const rows = history.data?.data || [];
+
+  if (history.loading) {
+    return <div className="mt-3 text-xs text-slate-500">Loading P/L history…</div>;
+  }
+  if (history.error) {
+    return (
+      <div className="mt-3 text-xs text-amber-400">
+        Could not load P/L history: {history.error}
+      </div>
+    );
+  }
+  if (!entry || rows.length === 0) {
+    return (
+      <div className="mt-3 text-xs text-slate-500">
+        No premium history available for this contract.
+      </div>
+    );
+  }
+
+  const series = rows
+    .filter((r) => r.mark != null)
+    .map((r) => ({
+      date: r.date,
+      premium: r.mark,
+      // P/L per share if you'd sold on this day, in dollars
+      plShare: r.mark - entry,
+      // P/L per contract (1 contract = 100 shares)
+      plContract: (r.mark - entry) * 100,
+    }));
+
+  if (series.length === 0) {
+    return (
+      <div className="mt-3 text-xs text-slate-500">
+        No usable premium quotes in this window.
+      </div>
+    );
+  }
+
+  // Use ask as a more conservative buy price for the secondary "long buyer
+  // bought at ask" framing. Sellers would typically receive bid; we keep
+  // the bid framing implicit (the user can read the chart's premium line).
+  const finalRow = series[series.length - 1];
+  const plAtExpiry = finalRow.plContract;
+  const best = series.reduce((acc, p) => (p.plContract > acc.plContract ? p : acc), series[0]);
+  const worst = series.reduce((acc, p) => (p.plContract < acc.plContract ? p : acc), series[0]);
+  const plPctAtExpiry = entry > 0 ? (finalRow.plShare / entry) * 100 : null;
+
+  const plColor = (v) =>
+    v == null
+      ? 'text-slate-400'
+      : v > 0
+        ? 'text-emerald-400'
+        : v < 0
+          ? 'text-rose-400'
+          : 'text-slate-400';
+  const sign = (v) => (v == null ? '' : v >= 0 ? '+' : '');
+
+  return (
+    <div className="mt-4 pt-4 border-t border-slate-800/80">
+      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-2 text-xs">
+        <span className="text-slate-300">
+          Entered at{' '}
+          <span className="font-semibold">{formatCurrency(entry, 2)}</span>
+          <span className="text-slate-500"> /sh · ${(entry * 100).toFixed(0)} /contract</span>
+        </span>
+        <span className={plColor(plAtExpiry) + ' font-semibold'}>
+          At expiry{expirationDate ? ` (${expirationDate})` : ''}: {sign(plAtExpiry)}
+          {formatCurrency(plAtExpiry, 0)}
+          {plPctAtExpiry != null && (
+            <span className="text-slate-500 ml-1 font-normal">
+              ({sign(plPctAtExpiry)}{plPctAtExpiry.toFixed(1)}%)
+            </span>
+          )}
+        </span>
+        <span className={plColor(best.plContract)}>
+          Best: {sign(best.plContract)}
+          {formatCurrency(best.plContract, 0)}
+          <span className="text-slate-500 ml-1">on {best.date}</span>
+        </span>
+        <span className={plColor(worst.plContract)}>
+          Worst: {sign(worst.plContract)}
+          {formatCurrency(worst.plContract, 0)}
+          <span className="text-slate-500 ml-1">on {worst.date}</span>
+        </span>
+      </div>
+      <div style={{ width: '100%', height: 110 }}>
+        <ResponsiveContainer>
+          <LineChart data={series} margin={{ top: 8, right: 12, left: 12, bottom: 8 }}>
+            <YAxis domain={['auto', 'auto']} hide />
+            <Tooltip
+              contentStyle={{
+                background: '#0f172a',
+                border: '1px solid #334155',
+                borderRadius: 6,
+                fontSize: 12,
+              }}
+              labelStyle={{ color: '#cbd5e1' }}
+              formatter={(value, key) => {
+                if (key === 'premium') return [formatCurrency(value, 2), 'Premium'];
+                if (key === 'plContract') {
+                  return [
+                    `${value >= 0 ? '+' : ''}${formatCurrency(value, 0)} /contract`,
+                    'P/L if sold',
+                  ];
+                }
+                return [value, key];
+              }}
+            />
+            <ReferenceLine
+              y={0}
+              stroke="#475569"
+              strokeDasharray="4 4"
+              label={{
+                value: 'Break-even',
+                position: 'right',
+                fill: '#64748b',
+                fontSize: 11,
+              }}
+            />
+            <Line
+              type="monotone"
+              dataKey="plContract"
+              stroke="#10b981"
+              strokeWidth={2}
+              dot={(props) => {
+                const { cx, cy, payload } = props;
+                if (cx == null || cy == null) return null;
+                return (
+                  <circle
+                    cx={cx}
+                    cy={cy}
+                    r={2.5}
+                    fill={payload.plContract >= 0 ? '#10b981' : '#f43f5e'}
+                    stroke="none"
+                  />
+                );
+              }}
+              activeDot={{ r: 4 }}
+              isAnimationActive={false}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
@@ -116,7 +296,14 @@ function isLiquidRow(opt) {
   return oi > 50 && iv < 100;
 }
 
-export function OptionChain({ ticker, optionData, optionType = 'put', dailyCloses = null, expirationDate = null }) {
+export function OptionChain({
+  ticker,
+  optionData,
+  optionType = 'put',
+  dailyCloses = null,
+  expirationDate = null,
+  quoteDate = null,
+}) {
   const [strikeFilter, setStrikeFilter] = useState('');
   const [deltaFilter, setDeltaFilter] = useState('');
   const [sortBy, setSortBy] = useState('strike');
@@ -369,10 +556,14 @@ export function OptionChain({ ticker, optionData, optionType = 'put', dailyClose
                         <tr className="bg-slate-900/40">
                           <td colSpan={12} className="p-4">
                             <ItmSparkline
+                              ticker={ticker}
                               dailyCloses={dailyCloses}
                               strike={opt.strike}
                               optionType={optionType}
                               expirationDate={expirationDate}
+                              quoteDate={quoteDate}
+                              entryMark={opt.mark}
+                              entryAsk={opt.ask}
                             />
                           </td>
                         </tr>

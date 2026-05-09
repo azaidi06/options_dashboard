@@ -135,6 +135,61 @@ def load_option_chain(
     }
 
 
+def get_contract_history(
+    ticker: str,
+    strike: float,
+    expiration: str,
+    option_type: str,
+    start_date: str,
+    end_date: str,
+) -> Dict[str, Any]:
+    """
+    Per-day premium series for a single contract (strike, expiration, type).
+
+    Used to compute realized daily P/L for the chain table's expandable
+    detail panel: for each quote date in [start_date, end_date], return
+    mark/bid/ask/last so the frontend can plot what the option was worth
+    each day vs. what it cost on the entry date.
+    """
+    ot = str(option_type or "put").strip().lower()
+    if ot not in {"put", "call"}:
+        raise ValueError(
+            f"option_type must be 'put' or 'call' (got {option_type!r})"
+        )
+
+    df = options_utils.load_options(
+        ticker,
+        option_type=ot,
+        start_date=start_date,
+        end_date=end_date,
+    )
+    expiration_ts = pd.to_datetime(expiration)
+    df = df[(df["expiration"] == expiration_ts) & (df["strike"] == float(strike))]
+    df = df.sort_values("date")
+
+    rows = []
+    for _, row in df.iterrows():
+        rows.append({
+            "date": row["date"].strftime("%Y-%m-%d"),
+            "mark": float(row["mark"]) if pd.notna(row["mark"]) else None,
+            "bid": float(row["bid"]) if pd.notna(row["bid"]) else None,
+            "ask": float(row["ask"]) if pd.notna(row["ask"]) else None,
+            "last": float(row["last"]) if pd.notna(row["last"]) else None,
+            "volume": int(row["volume"]) if pd.notna(row["volume"]) else 0,
+            "open_interest": int(row["open_interest"]) if pd.notna(row["open_interest"]) else 0,
+            "implied_volatility": float(row["implied_volatility"])
+                if pd.notna(row["implied_volatility"]) else None,
+        })
+
+    return {
+        "ticker": ticker,
+        "strike": float(strike),
+        "expiration": expiration_ts.strftime("%Y-%m-%d"),
+        "option_type": ot,
+        "data": rows,
+    }
+
+
 def get_iv_smile(
     ticker: str,
     date: str,

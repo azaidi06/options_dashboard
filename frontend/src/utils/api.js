@@ -123,6 +123,17 @@ export async function fetchOptionChain(ticker, date, expiration, optionType = 'p
   return fetchAPI(`/options/${ticker}/chain?${params}`);
 }
 
+export async function fetchContractHistory(ticker, strike, expiration, optionType, startDate, endDate) {
+  const params = new URLSearchParams({
+    strike,
+    expiration,
+    option_type: optionType,
+    start_date: startDate,
+    end_date: endDate,
+  });
+  return fetchAPI(`/options/${ticker}/contract-history?${params}`);
+}
+
 export async function fetchIVSmile(ticker, date, expiration, optionType = 'put') {
   const params = new URLSearchParams({
     date,
