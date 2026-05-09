@@ -17,7 +17,7 @@ import { IVSmileChart } from '../options/IVSmileChart';
 import { PayoffDiagram } from '../options/PayoffDiagram';
 import { CalculatorPanel } from '../options/CalculatorPanel';
 import { GreeksExplainer } from '../options/GreeksExplainer';
-import { useTickers, useTickerDateRange, useOptionChain, useIVSmile, useUnderlyingOHLC, useUnderlyingLatest } from '../../hooks/useOptionsData';
+import { useTickers, useTickerDateRange, useOptionChain, useIVSmile, useUnderlyingOHLC, useUnderlyingLatest, useUnderlyingDaily } from '../../hooks/useOptionsData';
 import { formatCurrency, formatPercent } from '../../utils/formatters';
 import { recordRecentTicker } from './HomePage';
 
@@ -26,7 +26,7 @@ import { recordRecentTicker } from './HomePage';
  * Helps users compare option premiums against where the stock actually
  * traded that day.
  */
-function UnderlyingOHLCStrip({ ticker, date, ohlc, latest, loading, error }) {
+function UnderlyingOHLCStrip({ ticker, date, ohlc, latest, expirationDate, expirationOhlc, loading, error }) {
   if (!date) return null;
 
   const cells = [
@@ -96,6 +96,25 @@ function UnderlyingOHLCStrip({ ticker, date, ohlc, latest, loading, error }) {
           </div>
         ))}
       </div>
+      {expirationDate && expirationOhlc?.close != null && (
+        <div className="mt-3 text-xs text-slate-400 flex flex-wrap gap-x-4 gap-y-1">
+          <span>
+            <span className="text-slate-500">Expired</span>{' '}
+            <span className="text-slate-200 font-semibold">{expirationDate}</span>{' '}
+            <span className="text-slate-500">at</span>{' '}
+            <span className="text-slate-200 font-semibold">
+              {formatCurrency(expirationOhlc.close)}
+            </span>
+          </span>
+          {ohlc?.close != null && expirationOhlc.close !== 0 && (
+            <span className="text-slate-500">
+              ({((expirationOhlc.close - ohlc.close) / ohlc.close >= 0 ? '+' : '') +
+                (((expirationOhlc.close - ohlc.close) / ohlc.close) * 100).toFixed(2)}
+              % over the option's life)
+            </span>
+          )}
+        </div>
+      )}
       {error && (
         <p className="mt-3 text-xs text-amber-400">
           Could not load underlying price for this date: {error}
@@ -171,6 +190,22 @@ export function OptionsPage() {
   const ivSmile = useIVSmile(selectedTicker, selectedDate, selectedExpiration, optionType);
   const underlying = useUnderlyingOHLC(selectedTicker, selectedDate);
   const underlyingLatest = useUnderlyingLatest(selectedTicker);
+
+  // Expiration is stored as a timestamp string ("2024-12-20 00:00:00");
+  // peel off just the date for downstream API calls.
+  const expirationDateOnly = selectedExpiration ? selectedExpiration.split(' ')[0] : '';
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const expirationInPast = expirationDateOnly && expirationDateOnly < todayStr;
+
+  const expirationOhlc = useUnderlyingOHLC(
+    expirationInPast ? selectedTicker : null,
+    expirationInPast ? expirationDateOnly : ''
+  );
+  const lifetimeDaily = useUnderlyingDaily(
+    expirationInPast ? selectedTicker : null,
+    expirationInPast ? selectedDate : '',
+    expirationInPast ? expirationDateOnly : ''
+  );
 
   // Set date to max available when dateRange loads
   useEffect(() => {
@@ -292,6 +327,8 @@ export function OptionsPage() {
           date={selectedDate}
           ohlc={underlying.data}
           latest={underlyingLatest.data}
+          expirationDate={expirationInPast ? expirationDateOnly : null}
+          expirationOhlc={expirationOhlc.data}
           loading={underlying.loading}
           error={underlying.error}
         />
@@ -318,7 +355,13 @@ export function OptionsPage() {
           <Tab label="Option Chain">
             {filteredChainData?.data?.length ? (
               <CardLg>
-                <OptionChain ticker={selectedTicker} optionData={filteredChainData} />
+                <OptionChain
+                  ticker={selectedTicker}
+                  optionData={filteredChainData}
+                  optionType={optionType}
+                  dailyCloses={expirationInPast ? lifetimeDaily.data : null}
+                  expirationDate={expirationInPast ? expirationDateOnly : null}
+                />
               </CardLg>
             ) : (
               <CardLg>

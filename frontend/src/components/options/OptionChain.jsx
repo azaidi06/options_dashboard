@@ -2,10 +2,106 @@
  * Option Chain Table - dark theme.
  * Filters out illiquid/sentinel rows by default and surfaces a quality badge.
  */
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Fragment } from 'react';
+import { LineChart, Line, ReferenceLine, Tooltip, ResponsiveContainer, YAxis } from 'recharts';
 import { Input } from '../common/Input';
 import { CardLg } from '../common/Card';
 import { formatCurrency, formatPercent, formatGreek } from '../../utils/formatters';
+
+function isITM(close, strike, optionType) {
+  if (close == null || strike == null) return false;
+  return optionType === 'call' ? close > strike : close < strike;
+}
+
+function ItmSparkline({ dailyCloses, strike, optionType, expirationDate }) {
+  const series = dailyCloses.map((r) => ({
+    date: r.date,
+    close: r.close,
+    itm: isITM(r.close, strike, optionType),
+  }));
+  const itmCount = series.filter((p) => p.itm).length;
+  const total = series.length;
+  const expirationItm = total > 0 && series[total - 1].itm;
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-2 text-xs">
+        <span className="text-slate-300">
+          Strike <span className="font-semibold">{formatCurrency(strike, 2)}</span>
+        </span>
+        <span className="text-slate-400">
+          Closed ITM on{' '}
+          <span className="text-emerald-400 font-semibold">{itmCount}</span> of {total} trading
+          days ({formatPercent(total ? (itmCount / total) * 100 : 0, 0)})
+        </span>
+        {expirationDate && (
+          <span className="text-slate-400">
+            At expiry:{' '}
+            <span
+              className={
+                expirationItm ? 'text-emerald-400 font-semibold' : 'text-rose-400 font-semibold'
+              }
+            >
+              {expirationItm ? 'ITM' : 'OTM'}
+            </span>
+          </span>
+        )}
+      </div>
+      <div style={{ width: '100%', height: 120 }}>
+        <ResponsiveContainer>
+          <LineChart data={series} margin={{ top: 8, right: 12, left: 12, bottom: 8 }}>
+            <YAxis
+              domain={['auto', 'auto']}
+              hide
+            />
+            <Tooltip
+              contentStyle={{
+                background: '#0f172a',
+                border: '1px solid #334155',
+                borderRadius: 6,
+                fontSize: 12,
+              }}
+              labelStyle={{ color: '#cbd5e1' }}
+              formatter={(value) => [formatCurrency(value, 2), 'Close']}
+            />
+            <ReferenceLine
+              y={strike}
+              stroke="#f59e0b"
+              strokeDasharray="4 4"
+              label={{
+                value: `Strike ${formatCurrency(strike, 2)}`,
+                position: 'right',
+                fill: '#f59e0b',
+                fontSize: 11,
+              }}
+            />
+            <Line
+              type="monotone"
+              dataKey="close"
+              stroke="#6366f1"
+              strokeWidth={2}
+              dot={(props) => {
+                const { cx, cy, payload } = props;
+                if (cx == null || cy == null) return null;
+                return (
+                  <circle
+                    cx={cx}
+                    cy={cy}
+                    r={2.5}
+                    fill={payload.itm ? '#10b981' : '#475569'}
+                    stroke="none"
+                  />
+                );
+              }}
+              activeDot={{ r: 4 }}
+              isAnimationActive={false}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
 
 function isStaleRow(opt) {
   const iv = (opt.implied_volatility || 0) * 100;
@@ -20,12 +116,15 @@ function isLiquidRow(opt) {
   return oi > 50 && iv < 100;
 }
 
-export function OptionChain({ ticker, optionData }) {
+export function OptionChain({ ticker, optionData, optionType = 'put', dailyCloses = null, expirationDate = null }) {
   const [strikeFilter, setStrikeFilter] = useState('');
   const [deltaFilter, setDeltaFilter] = useState('');
   const [sortBy, setSortBy] = useState('strike');
   const [sortDir, setSortDir] = useState('asc');
   const [showStale, setShowStale] = useState(false);
+  const [expandedStrike, setExpandedStrike] = useState(null);
+
+  const showItmColumn = Array.isArray(dailyCloses) && dailyCloses.length > 0;
 
   if (!optionData || !optionData.data) {
     return (
@@ -175,12 +274,13 @@ export function OptionChain({ ticker, optionData }) {
                   </th>
                 ))}
                 <th>OI</th>
+                {showItmColumn && <th title="Days the underlying closed ITM during the option's lifetime">ITM days</th>}
               </tr>
             </thead>
             <tbody>
               {filteredData.length === 0 ? (
                 <tr>
-                  <td colSpan="11" className="text-center text-slate-500 py-6">
+                  <td colSpan={showItmColumn ? 12 : 11} className="text-center text-slate-500 py-6">
                     No contracts match the selected filters
                   </td>
                 </tr>
@@ -191,43 +291,93 @@ export function OptionChain({ ticker, optionData }) {
                   const bid = opt.bid || 0;
                   const ask = opt.ask || 0;
                   const noQuote = bid === 0 && ask === 0;
+                  const itmCount = showItmColumn
+                    ? dailyCloses.reduce(
+                        (n, r) => n + (isITM(r.close, opt.strike, optionType) ? 1 : 0),
+                        0
+                      )
+                    : null;
+                  const totalDays = showItmColumn ? dailyCloses.length : null;
+                  const itmPct = totalDays ? (itmCount / totalDays) * 100 : null;
+                  const isExpanded = expandedStrike === opt.strike;
                   return (
-                    <tr key={idx}>
-                      <td>
-                        <span
-                          className={`inline-block w-2.5 h-2.5 rounded-full ${
-                            liquid ? 'bg-emerald-500' : 'bg-slate-500'
-                          }`}
-                          title={liquid ? 'Liquid (OI > 50, IV < 100%)' : 'Stale or illiquid'}
-                        />
-                      </td>
-                      <td className="font-semibold text-slate-200">
-                        {formatCurrency(opt.strike, 2)}
-                      </td>
-                      <td className="font-mono">
-                        {noQuote ? '—' : formatCurrency(opt.mark, 2)}
-                      </td>
-                      <td className="font-mono text-emerald-400">
-                        {noQuote ? '—' : formatCurrency(opt.bid, 2)}
-                      </td>
-                      <td className="font-mono text-red-400">
-                        {noQuote ? '—' : formatCurrency(opt.ask, 2)}
-                      </td>
-                      <td>
-                        {ivPct > 200
-                          ? formatPercent(ivPct, 0)
-                          : formatPercent(ivPct, 1)}
-                      </td>
-                      <td className="text-blue-400">{formatGreek(opt.delta, 'delta')}</td>
-                      <td className="text-purple-400">{formatGreek(opt.gamma, 'gamma')}</td>
-                      <td className="text-amber-400">{formatGreek(opt.theta, 'theta')}</td>
-                      <td className="text-emerald-400">{formatGreek(opt.vega, 'vega')}</td>
-                      <td>
-                        {opt.open_interest != null
-                          ? Number(opt.open_interest).toLocaleString()
-                          : '—'}
-                      </td>
-                    </tr>
+                    <Fragment key={idx}>
+                      <tr
+                        onClick={() =>
+                          showItmColumn
+                            ? setExpandedStrike(isExpanded ? null : opt.strike)
+                            : null
+                        }
+                        className={
+                          showItmColumn
+                            ? 'cursor-pointer hover:bg-slate-800/40 transition-colors'
+                            : ''
+                        }
+                      >
+                        <td>
+                          <span
+                            className={`inline-block w-2.5 h-2.5 rounded-full ${
+                              liquid ? 'bg-emerald-500' : 'bg-slate-500'
+                            }`}
+                            title={liquid ? 'Liquid (OI > 50, IV < 100%)' : 'Stale or illiquid'}
+                          />
+                        </td>
+                        <td className="font-semibold text-slate-200">
+                          {showItmColumn && (
+                            <span className="inline-block w-3 text-slate-500 mr-1">
+                              {isExpanded ? '▾' : '▸'}
+                            </span>
+                          )}
+                          {formatCurrency(opt.strike, 2)}
+                        </td>
+                        <td className="font-mono">
+                          {noQuote ? '—' : formatCurrency(opt.mark, 2)}
+                        </td>
+                        <td className="font-mono text-emerald-400">
+                          {noQuote ? '—' : formatCurrency(opt.bid, 2)}
+                        </td>
+                        <td className="font-mono text-red-400">
+                          {noQuote ? '—' : formatCurrency(opt.ask, 2)}
+                        </td>
+                        <td>
+                          {ivPct > 200
+                            ? formatPercent(ivPct, 0)
+                            : formatPercent(ivPct, 1)}
+                        </td>
+                        <td className="text-blue-400">{formatGreek(opt.delta, 'delta')}</td>
+                        <td className="text-purple-400">{formatGreek(opt.gamma, 'gamma')}</td>
+                        <td className="text-amber-400">{formatGreek(opt.theta, 'theta')}</td>
+                        <td className="text-emerald-400">{formatGreek(opt.vega, 'vega')}</td>
+                        <td>
+                          {opt.open_interest != null
+                            ? Number(opt.open_interest).toLocaleString()
+                            : '—'}
+                        </td>
+                        {showItmColumn && (
+                          <td className="font-mono">
+                            <span className={itmCount > 0 ? 'text-emerald-400' : 'text-slate-500'}>
+                              {itmCount}
+                            </span>
+                            <span className="text-slate-600"> / {totalDays}</span>
+                            <span className="text-slate-500 ml-1">
+                              ({formatPercent(itmPct, 0)})
+                            </span>
+                          </td>
+                        )}
+                      </tr>
+                      {showItmColumn && isExpanded && (
+                        <tr className="bg-slate-900/40">
+                          <td colSpan={12} className="p-4">
+                            <ItmSparkline
+                              dailyCloses={dailyCloses}
+                              strike={opt.strike}
+                              optionType={optionType}
+                              expirationDate={expirationDate}
+                            />
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
                   );
                 })
               )}

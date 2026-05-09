@@ -244,6 +244,37 @@ export function useUnderlyingOHLC(ticker, date) {
 }
 
 /**
+ * Hook to fetch daily underlying closes for a date range. Used to compute
+ * how many days an option closed ITM over its lifetime.
+ */
+export function useUnderlyingDaily(ticker, startDate, endDate) {
+  const { data, error, isLoading } = useSWR(
+    ticker && startDate && endDate ? ['underlying-daily', ticker, startDate, endDate] : null,
+    async ([, t, s, e]) => {
+      // Bump the end one day so yfinance's exclusive `end` includes it.
+      const endD = new Date(e);
+      endD.setUTCDate(endD.getUTCDate() + 1);
+      const endStr = endD.toISOString().slice(0, 10);
+      const resp = await fetchStockData(t, s, endStr, 1);
+      const rows = resp?.data || [];
+      return rows
+        .filter((r) => r.date >= s && r.date <= e)
+        .map((r) => ({ date: r.date, close: r.close }));
+    },
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 300000,
+    }
+  );
+
+  return {
+    data,
+    loading: isLoading,
+    error: error?.message,
+  };
+}
+
+/**
  * Hook to fetch the most recent available bar for a ticker (latest close).
  * Used to show "where is the stock now" alongside a historical chain so
  * users can eyeball whether a past option would have ended up profitable.
