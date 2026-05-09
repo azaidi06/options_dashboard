@@ -51,11 +51,9 @@ function UnderlyingOHLCStrip({ ticker, date, ohlc, latest, expirationDate, expir
     : !latest?.close;
   const compareDate = compareSource?.date;
   const compareClose = compareSource?.close;
-  // Hide the comparison when there's literally nothing to compare against
-  // (e.g., quote date is the most recent bar we have for an unexpired
-  // chain, so latest.date === date — the move is zero by definition).
+  // Note "same day" so the comparison cells can show a friendly message
+  // instead of a 0% move (e.g. quote date IS the latest bar we have).
   const sameDay = compareDate && compareDate === date;
-  const showCompare = !sameDay && (compareLoading || compareClose != null);
 
   const pctMove =
     compareClose != null && ohlc?.close != null && ohlc.close !== 0
@@ -103,66 +101,93 @@ function UnderlyingOHLCStrip({ ticker, date, ohlc, latest, expirationDate, expir
           </div>
         ))}
       </div>
-      {(ohlc?.pctChange1d != null || ohlc?.pctChange2d != null) && (
-        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-400">
-          {[
-            { label: '1-day Δ', pct: ohlc.pctChange1d },
-            { label: '2-day Δ', pct: ohlc.pctChange2d },
-          ].map(({ label, pct }) =>
-            pct == null ? null : (
-              <span key={label}>
-                <span className="text-slate-500">{label}:</span>{' '}
-                <span
-                  className={
-                    'font-semibold ' +
-                    (pct > 0
-                      ? 'text-emerald-400'
-                      : pct < 0
-                        ? 'text-rose-400'
-                        : 'text-slate-300')
-                  }
-                >
-                  {pct > 0 ? '▲' : pct < 0 ? '▼' : '·'} {pct >= 0 ? '+' : ''}
-                  {pct.toFixed(2)}%
-                </span>
-              </span>
-            )
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+        {/* 1-day Δ */}
+        <div className="metric-card p-3">
+          <div className="metric-label">1-day Δ</div>
+          {loading ? (
+            <div className="skeleton h-6 w-2/3" />
+          ) : ohlc?.pctChange1d != null ? (
+            <div
+              className={
+                'metric-value text-lg ' +
+                (ohlc.pctChange1d > 0
+                  ? 'text-emerald-400'
+                  : ohlc.pctChange1d < 0
+                    ? 'text-rose-400'
+                    : 'text-slate-200')
+              }
+            >
+              {ohlc.pctChange1d > 0 ? '▲' : ohlc.pctChange1d < 0 ? '▼' : '·'}{' '}
+              {ohlc.pctChange1d >= 0 ? '+' : ''}
+              {ohlc.pctChange1d.toFixed(2)}%
+            </div>
+          ) : (
+            <div className="text-slate-500 text-sm">—</div>
           )}
         </div>
-      )}
-      {showCompare && (
-        <div className="mt-4 pt-4 border-t border-slate-800/80">
-          <div className="flex items-baseline justify-between gap-4 flex-wrap">
-            <div>
-              <div className="metric-label mb-1">
-                {isExpired ? 'Price at expiration' : 'Price today'}
-              </div>
-              {compareLoading ? (
-                <div className="skeleton h-7 w-32" />
-              ) : (
-                <div className="flex items-baseline gap-3 flex-wrap">
-                  <span className="metric-value text-2xl">
-                    {compareClose != null ? formatCurrency(compareClose) : '—'}
-                  </span>
-                  {compareDate && (
-                    <span className="text-xs text-slate-500">on {compareDate}</span>
-                  )}
-                </div>
-              )}
+
+        {/* 2-day Δ */}
+        <div className="metric-card p-3">
+          <div className="metric-label">2-day Δ</div>
+          {loading ? (
+            <div className="skeleton h-6 w-2/3" />
+          ) : ohlc?.pctChange2d != null ? (
+            <div
+              className={
+                'metric-value text-lg ' +
+                (ohlc.pctChange2d > 0
+                  ? 'text-emerald-400'
+                  : ohlc.pctChange2d < 0
+                    ? 'text-rose-400'
+                    : 'text-slate-200')
+              }
+            >
+              {ohlc.pctChange2d > 0 ? '▲' : ohlc.pctChange2d < 0 ? '▼' : '·'}{' '}
+              {ohlc.pctChange2d >= 0 ? '+' : ''}
+              {ohlc.pctChange2d.toFixed(2)}%
             </div>
-            {pctMove != null && (
-              <div className="text-right">
-                <div className="metric-label mb-1">
-                  vs {date} close
-                </div>
-                <div className={`text-lg font-semibold ${moveColor}`}>
-                  {moveArrow} {pctMove >= 0 ? '+' : ''}{pctMove.toFixed(2)}%
-                </div>
-              </div>
-            )}
-          </div>
+          ) : (
+            <div className="text-slate-500 text-sm">—</div>
+          )}
         </div>
-      )}
+
+        {/* Price at expiration / today */}
+        <div className="metric-card p-3">
+          <div className="metric-label">
+            {isExpired ? 'At expiration' : 'Today'}
+          </div>
+          {compareLoading ? (
+            <div className="skeleton h-6 w-2/3" />
+          ) : compareClose != null ? (
+            <>
+              <div className="metric-value text-lg">{formatCurrency(compareClose)}</div>
+              {compareDate && (
+                <div className="text-xs text-slate-500 mt-0.5">{compareDate}</div>
+              )}
+            </>
+          ) : sameDay ? (
+            <div className="text-slate-500 text-sm">same as quote date</div>
+          ) : (
+            <div className="text-slate-500 text-sm">—</div>
+          )}
+        </div>
+
+        {/* vs quote-date close */}
+        <div className="metric-card p-3">
+          <div className="metric-label">vs {date} close</div>
+          {compareLoading ? (
+            <div className="skeleton h-6 w-2/3" />
+          ) : pctMove != null ? (
+            <div className={'metric-value text-lg ' + moveColor}>
+              {moveArrow} {pctMove >= 0 ? '+' : ''}
+              {pctMove.toFixed(2)}%
+            </div>
+          ) : (
+            <div className="text-slate-500 text-sm">—</div>
+          )}
+        </div>
+      </div>
       {error && (
         <p className="mt-3 text-xs text-amber-400">
           Could not load underlying price for this date: {error}
