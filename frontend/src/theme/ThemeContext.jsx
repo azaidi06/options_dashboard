@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { TOKENS_BY_THEME, darkTokens } from './tokens';
 
-const STORAGE_KEY = 'options-dashboard-theme';
+const STORAGE_KEY = 'fin-theme';
 const ThemeContext = createContext(null);
 
 function readStoredTheme() {
