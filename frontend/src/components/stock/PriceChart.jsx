@@ -14,12 +14,13 @@ import {
   Cell,
 } from 'recharts';
 import { formatCurrency, formatVolume, formatPercent } from '../../utils/formatters';
+import { useTheme } from '../../theme/ThemeContext';
 
-function getColor(pctChange) {
-  if (pctChange >= 0) return '#10b981';     // emerald
-  if (pctChange > -0.05) return '#fbbf24';  // amber
-  if (pctChange > -0.1) return '#fb923c';   // orange
-  return '#ef4444';                          // red
+function getColor(pctChange, t) {
+  if (pctChange >= 0) return t.positive;
+  if (pctChange > -0.05) return t.warningStrong;
+  if (pctChange > -0.1) return t.warningStrong;
+  return t.negative;
 }
 
 function PriceTooltip({ active, payload, label }) {
@@ -28,26 +29,26 @@ function PriceTooltip({ active, payload, label }) {
   if (!row) return null;
   const distFromHigh = row.pct_change != null ? row.pct_change * 100 : null;
   return (
-    <div className="bg-slate-900/95 backdrop-blur border border-slate-700 rounded-lg shadow-xl px-3 py-2 text-xs">
-      <div className="font-semibold text-slate-100 mb-1">{label}</div>
+    <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur border border-stone-300 dark:border-slate-700 rounded-lg shadow-xl px-3 py-2 text-xs">
+      <div className="font-semibold text-stone-900 dark:text-slate-100 mb-1">{label}</div>
       {row.open != null && (
-        <div className="text-slate-300 tabular-nums">
+        <div className="text-stone-700 dark:text-slate-300 tabular-nums">
           O: {formatCurrency(row.open, 2)} &nbsp; H: {formatCurrency(row.high, 2)} &nbsp;
           L: {formatCurrency(row.low, 2)} &nbsp; C: {formatCurrency(row.close, 2)}
         </div>
       )}
       {row.open == null && row.close != null && (
-        <div className="text-slate-300 tabular-nums">
+        <div className="text-stone-700 dark:text-slate-300 tabular-nums">
           Close: {formatCurrency(row.close, 2)}
         </div>
       )}
       {row.volume != null && (
-        <div className="text-slate-400 tabular-nums">
+        <div className="text-stone-600 dark:text-slate-400 tabular-nums">
           Vol: {formatVolume(row.volume, 1)}
         </div>
       )}
       {distFromHigh != null && (
-        <div className="text-slate-400 tabular-nums">
+        <div className="text-stone-600 dark:text-slate-400 tabular-nums">
           Distance from {row.lookback_days || ''} rolling high: {formatPercent(distFromHigh, 1)}
         </div>
       )}
@@ -56,8 +57,9 @@ function PriceTooltip({ active, payload, label }) {
 }
 
 export function PriceChart({ data, ticker, lookbackDays }) {
+  const t = useTheme().tokens;
   if (!data || data.length === 0) {
-    return <div className="text-slate-500 text-center py-8">No data available</div>;
+    return <div className="text-stone-500 dark:text-slate-500 text-center py-8">No data available</div>;
   }
 
   const chartData = data.map((item, i) => {
@@ -67,7 +69,7 @@ export function PriceChart({ data, ticker, lookbackDays }) {
     return {
       ...item,
       lookback_days: lookbackDays,
-      lineColor: getColor(pctChange),
+      lineColor: getColor(pctChange, t),
       volumeColor: dailyChange >= 0 ? 'rgba(16, 185, 129, 0.6)' : 'rgba(239, 68, 68, 0.6)',
     };
   });
@@ -79,9 +81,9 @@ export function PriceChart({ data, ticker, lookbackDays }) {
 
   return (
     <div>
-      <h3 className="text-base font-semibold mb-4 text-slate-200">
+      <h3 className="text-base font-semibold mb-4 text-stone-800 dark:text-slate-200">
         {ticker} Price Chart
-        <span className="text-slate-500 font-normal ml-2 text-sm">({lookbackDays}-day lookback)</span>
+        <span className="text-stone-500 dark:text-slate-500 font-normal ml-2 text-sm">({lookbackDays}-day lookback)</span>
       </h3>
 
       <ResponsiveContainer width="100%" height={400}>
@@ -93,24 +95,24 @@ export function PriceChart({ data, ticker, lookbackDays }) {
               ))}
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-          <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} stroke="#334155" />
+          <CartesianGrid strokeDasharray="3 3" stroke={t.surfaceElev} />
+          <XAxis dataKey="date" tick={{ fontSize: 11, fill: t.textMute }} stroke={t.border} />
           <YAxis
             yAxisId="left"
-            tick={{ fontSize: 11, fill: '#94a3b8' }}
-            stroke="#334155"
+            tick={{ fontSize: 11, fill: t.textMute }}
+            stroke={t.border}
             domain={['auto', 'auto']}
             tickFormatter={(v) => `$${Number(v).toFixed(0)}`}
           />
           <YAxis
             yAxisId="right"
             orientation="right"
-            tick={{ fontSize: 11, fill: '#64748b' }}
-            stroke="#334155"
+            tick={{ fontSize: 11, fill: t.textFaint }}
+            stroke={t.border}
             tickFormatter={(v) => formatVolume(v, 0)}
           />
           <Tooltip content={<PriceTooltip />} />
-          <Legend wrapperStyle={{ color: '#94a3b8' }} />
+          <Legend wrapperStyle={{ color: t.textMute }} />
 
           <Bar yAxisId="right" dataKey="volume" name="Volume" opacity={0.4} isAnimationActive={false}>
             {chartData.map((entry, i) => (
@@ -132,7 +134,7 @@ export function PriceChart({ data, ticker, lookbackDays }) {
       </ResponsiveContainer>
 
       {/* Legend + gradient bar */}
-      <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-400">
+      <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-stone-600 dark:text-slate-400">
         <div className="grid grid-cols-2 gap-3">
           <div className="flex items-center gap-2">
             <div className="w-5 h-0.5 bg-emerald-500 rounded" />
@@ -154,7 +156,7 @@ export function PriceChart({ data, ticker, lookbackDays }) {
 
         {/* Inline gradient legend explaining the price line colour-bar */}
         <div className="flex flex-col gap-1">
-          <span className="text-xs text-slate-500">Distance from rolling high</span>
+          <span className="text-xs text-stone-500 dark:text-slate-500">Distance from rolling high</span>
           <div
             className="h-2 rounded"
             style={{
@@ -163,7 +165,7 @@ export function PriceChart({ data, ticker, lookbackDays }) {
             }}
             aria-hidden="true"
           />
-          <div className="flex justify-between text-xs text-slate-500 tabular-nums">
+          <div className="flex justify-between text-xs text-stone-500 dark:text-slate-500 tabular-nums">
             <span>0% (green)</span>
             <span>−30% (red)</span>
           </div>

@@ -34,11 +34,11 @@ const TODAY_ISO = () => new Date().toISOString().slice(0, 10);
 
 function StatusPill({ tone, children }) {
   const tones = {
-    green: 'bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/30',
-    blue: 'bg-blue-500/15 text-blue-300 ring-1 ring-blue-500/30',
-    red: 'bg-red-500/15 text-red-300 ring-1 ring-red-500/30',
-    amber: 'bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30',
-    slate: 'bg-slate-700/40 text-slate-300 ring-1 ring-slate-600/40',
+    green: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-500/30',
+    blue: 'bg-blue-500/15 text-blue-700 dark:text-blue-300 ring-1 ring-blue-500/30',
+    red: 'bg-red-500/15 text-red-700 dark:text-red-300 ring-1 ring-red-500/30',
+    amber: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 ring-1 ring-amber-500/30',
+    slate: 'bg-stone-200/40 dark:bg-slate-700/40 text-stone-700 dark:text-slate-300 ring-1 ring-stone-400/40 dark:ring-slate-600/40',
   };
   return (
     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${tones[tone] || tones.slate}`}>
@@ -51,11 +51,11 @@ function ProgressBar({ done, total }) {
   const pct = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
   return (
     <div className="w-full">
-      <div className="flex justify-between text-xs text-slate-400 mb-1.5 num">
+      <div className="flex justify-between text-xs text-stone-600 dark:text-slate-400 mb-1.5 num">
         <span>{done.toLocaleString()} / {total.toLocaleString()}</span>
         <span>{pct}%</span>
       </div>
-      <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden ring-1 ring-slate-700/50">
+      <div className="h-2 w-full bg-stone-100 dark:bg-slate-800 rounded-full overflow-hidden ring-1 ring-stone-300/50 dark:ring-slate-700/50">
         <div
           className="h-full bg-indigo-500 rounded-full transition-all duration-300"
           style={{ width: `${pct}%` }}
@@ -75,10 +75,10 @@ function ProbeResult({ probe, fromDate, toDate, setFromDate, setToDate, onFetch,
   if (probe.existsUpstream === false) {
     return (
       <div className="error-box mt-4 flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+        <AlertTriangle className="w-5 h-5 text-red-700 dark:text-red-400 flex-shrink-0 mt-0.5" />
         <div>
-          <p className="text-red-300 font-semibold">Ticker not found upstream.</p>
-          <p className="text-sm text-slate-300 mt-1">
+          <p className="text-red-700 dark:text-red-300 font-semibold">Ticker not found upstream.</p>
+          <p className="text-sm text-stone-700 dark:text-slate-300 mt-1">
             <span className="font-mono">{probe.ticker}</span> doesn't appear to exist on the upstream provider.
           </p>
         </div>
@@ -94,13 +94,13 @@ function ProbeResult({ probe, fromDate, toDate, setFromDate, setToDate, onFetch,
       <div className="info-box mt-4">
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="flex items-start gap-3">
-            <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+            <CheckCircle2 className="w-5 h-5 text-emerald-700 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
             <div>
               <StatusPill tone="green">
                 Already cached: {c.firstDate} → {c.lastDate} ({c.tradingDays?.toLocaleString()} trading days)
               </StatusPill>
               {hasGaps && (
-                <p className="text-xs text-amber-300 mt-2">
+                <p className="text-xs text-amber-700 dark:text-amber-300 mt-2">
                   {probe.missingRanges.length} missing range
                   {probe.missingRanges.length === 1 ? '' : 's'} detected — top up below.
                 </p>
@@ -129,12 +129,12 @@ function ProbeResult({ probe, fromDate, toDate, setFromDate, setToDate, onFetch,
   return (
     <div className="info-box mt-4">
       <div className="flex items-start gap-3 mb-4">
-        <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+        <Info className="w-5 h-5 text-blue-700 dark:text-blue-400 flex-shrink-0 mt-0.5" />
         <div>
-          <p className="text-slate-100 font-semibold">New ticker — not yet cached.</p>
-          <p className="text-sm text-slate-400 mt-1">
-            Available upstream: <span className="font-mono text-slate-300">{avail.firstDate || '?'}</span> →{' '}
-            <span className="font-mono text-slate-300">{avail.lastDate || '?'}</span>
+          <p className="text-stone-900 dark:text-slate-100 font-semibold">New ticker — not yet cached.</p>
+          <p className="text-sm text-stone-600 dark:text-slate-400 mt-1">
+            Available upstream: <span className="font-mono text-stone-700 dark:text-slate-300">{avail.firstDate || '?'}</span> →{' '}
+            <span className="font-mono text-stone-700 dark:text-slate-300">{avail.lastDate || '?'}</span>
           </p>
         </div>
       </div>
@@ -163,20 +163,20 @@ function TickerCard({ row, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="card-lg group text-left transition-all duration-200 border-slate-800 hover:border-indigo-500/40 hover:shadow-lg hover:shadow-indigo-500/5"
+      className="card-lg group text-left transition-all duration-200 border-stone-200 dark:border-slate-800 hover:border-indigo-500/40 hover:shadow-lg hover:shadow-indigo-500/5"
     >
       <div className="flex items-start justify-between mb-3">
-        <div className="text-xl font-extrabold text-slate-100 tracking-tight font-mono">
+        <div className="text-xl font-extrabold text-stone-900 dark:text-slate-100 tracking-tight font-mono">
           {row.ticker}
         </div>
-        <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-indigo-400 transition-colors" />
+        <ArrowRight className="w-4 h-4 text-stone-400 dark:text-slate-600 group-hover:text-indigo-700 group-hover:dark:text-indigo-400 transition-colors" />
       </div>
-      <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Coverage</div>
-      <div className="text-sm text-slate-300 num">
+      <div className="text-xs text-stone-500 dark:text-slate-500 uppercase tracking-wider mb-1">Coverage</div>
+      <div className="text-sm text-stone-700 dark:text-slate-300 num">
         {row.firstDate} → {row.lastDate}
       </div>
-      <div className="mt-2 text-xs text-slate-500">
-        <span className="num text-slate-400">{Number(row.tradingDays || 0).toLocaleString()}</span> trading days
+      <div className="mt-2 text-xs text-stone-500 dark:text-slate-500">
+        <span className="num text-stone-600 dark:text-slate-400">{Number(row.tradingDays || 0).toLocaleString()}</span> trading days
       </div>
     </button>
   );
@@ -288,11 +288,11 @@ export function TickersPage() {
         <CardLg className="mb-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-9 h-9 rounded-lg bg-indigo-600/15 flex items-center justify-center">
-              <Plus className="w-4 h-4 text-indigo-400" />
+              <Plus className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
             </div>
             <div>
-              <h2 className="text-base font-semibold text-slate-200">Add Ticker</h2>
-              <p className="text-xs text-slate-500">
+              <h2 className="text-base font-semibold text-stone-800 dark:text-slate-200">Add Ticker</h2>
+              <p className="text-xs text-stone-500 dark:text-slate-500">
                 Probe a symbol to check upstream availability and existing cache, then fetch its history.
               </p>
             </div>
@@ -339,25 +339,25 @@ export function TickersPage() {
             </div>
           )}
           {job && (
-            <div className="mt-4 card-lg bg-slate-900/40">
+            <div className="mt-4 card-lg bg-white/40 dark:bg-slate-900/40">
               <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-slate-200 font-mono">{job.ticker}</span>
+                  <span className="text-sm font-semibold text-stone-800 dark:text-slate-200 font-mono">{job.ticker}</span>
                   {jobActive && <StatusPill tone="blue">Running ({job.status || 'queued'})</StatusPill>}
                   {jobDone && <StatusPill tone="green">Complete</StatusPill>}
                   {jobFailed && <StatusPill tone="red">Failed</StatusPill>}
                 </div>
-                <span className="text-xs text-slate-500 font-mono">job: {job.jobId}</span>
+                <span className="text-xs text-stone-500 dark:text-slate-500 font-mono">job: {job.jobId}</span>
               </div>
               <ProgressBar
                 done={job.progress?.done || 0}
                 total={job.progress?.total || 0}
               />
               {jobFailed && job.error && (
-                <p className="mt-3 text-sm text-red-300">{job.error}</p>
+                <p className="mt-3 text-sm text-red-700 dark:text-red-300">{job.error}</p>
               )}
               {jobDone && (
-                <p className="mt-3 text-sm text-emerald-300">
+                <p className="mt-3 text-sm text-emerald-700 dark:text-emerald-300">
                   Cached. The ticker will appear in the grid below.
                 </p>
               )}
@@ -370,24 +370,24 @@ export function TickersPage() {
           <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-indigo-600/15 flex items-center justify-center">
-                <Database className="w-4 h-4 text-indigo-400" />
+                <Database className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
               </div>
               <div>
-                <h2 className="text-base font-semibold text-slate-200">Cached Tickers</h2>
-                <p className="text-xs text-slate-500">
+                <h2 className="text-base font-semibold text-stone-800 dark:text-slate-200">Cached Tickers</h2>
+                <p className="text-xs text-stone-500 dark:text-slate-500">
                   Click a card to load it on the Options page.
                 </p>
               </div>
             </div>
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500 dark:text-slate-500 pointer-events-none" />
               <input
                 type="text"
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
                 placeholder="Filter…"
-                className="pl-8 pr-3 py-1.5 w-56 text-sm bg-slate-800/80 border border-slate-700 rounded-lg
-                           text-slate-100 placeholder-slate-500 focus:outline-none
+                className="pl-8 pr-3 py-1.5 w-56 text-sm bg-stone-100/80 dark:bg-slate-800/80 border border-stone-300 dark:border-slate-700 rounded-lg
+                           text-stone-900 dark:text-slate-100 placeholder-stone-400 dark:placeholder-slate-500 focus:outline-none
                            focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500
                            transition-all duration-200"
               />
@@ -416,14 +416,14 @@ export function TickersPage() {
           {!coverage.loading && !coverage.error && filteredCoverage.length === 0 && (
             <div className="flex items-center justify-center py-12">
               <div className="text-center max-w-md">
-                <Database className="w-10 h-10 text-slate-600 mx-auto mb-3" strokeWidth={1.5} />
-                <p className="text-slate-300 font-semibold mb-1">
+                <Database className="w-10 h-10 text-stone-400 dark:text-slate-600 mx-auto mb-3" strokeWidth={1.5} />
+                <p className="text-stone-700 dark:text-slate-300 font-semibold mb-1">
                   {filter
                     ? `No tickers match “${filter}”.`
                     : 'No tickers cached yet — add one above'}
                 </p>
                 {!filter && (
-                  <p className="text-slate-500 text-sm">
+                  <p className="text-stone-500 dark:text-slate-500 text-sm">
                     Probe a symbol with the form above to start caching its option history.
                   </p>
                 )}

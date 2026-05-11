@@ -103,7 +103,7 @@ function RefLinks({ topic, showBeginner = true, showAcademic = true }) {
     <div className="space-y-3 mt-3">
       {showBeginner && refs.beginner && (
         <div>
-          <p className="font-semibold text-slate-200 mb-2">Learn More (Beginner-Friendly):</p>
+          <p className="font-semibold text-stone-800 dark:text-slate-200 mb-2">Learn More (Beginner-Friendly):</p>
           <div className="space-y-1.5">
             {refs.beginner.map(([name, url]) => (
               <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="ref-link">
@@ -115,7 +115,7 @@ function RefLinks({ topic, showBeginner = true, showAcademic = true }) {
       )}
       {showAcademic && refs.academic && (
         <div>
-          <p className="font-semibold text-slate-200 mb-2">Deep Dive (Academic/Professional):</p>
+          <p className="font-semibold text-stone-800 dark:text-slate-200 mb-2">Deep Dive (Academic/Professional):</p>
           <div className="space-y-1.5">
             {refs.academic.map(([name, url]) => (
               <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="ref-link">
@@ -149,7 +149,7 @@ export function LearnPage() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-extrabold mb-3 gradient-text">Learn</h1>
-          <p className="text-slate-400 max-w-3xl">
+          <p className="text-stone-600 dark:text-slate-400 max-w-3xl">
             Reference material for the dashboard&apos;s analytics &mdash; deep-dives into the indicators
             and concepts the data pages use, with curated beginner and academic sources for each.
           </p>
@@ -161,12 +161,12 @@ export function LearnPage() {
             {/* ═══════════════════════ */}
             {/* 1. GETTING STARTED */}
             {/* ═══════════════════════ */}
-            <h2 id="getting-started" className="text-2xl font-bold text-slate-100 mb-4 scroll-mt-24">
+            <h2 id="getting-started" className="text-2xl font-bold text-stone-900 dark:text-slate-100 mb-4 scroll-mt-24">
               1. Getting Started
             </h2>
 
-            <div className="text-sm text-slate-300 leading-relaxed space-y-3 mb-5">
-              <p><strong className="text-slate-100">What this dashboard does:</strong></p>
+            <div className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed space-y-3 mb-5">
+              <p><strong className="text-stone-900 dark:text-slate-100">What this dashboard does:</strong></p>
               <ul className="list-disc list-inside space-y-1.5 ml-2">
                 <li>Visualizes stock prices with gradient colors showing distance from rolling highs (a technique used by professional traders to quickly identify relative performance)</li>
                 <li>Analyzes drawdowns and recovery patterns using the same methodology employed by hedge funds and risk managers</li>
@@ -174,12 +174,12 @@ export function LearnPage() {
                 <li>Displays technical indicators (RSI, MACD, Bollinger Bands) &mdash; the same tools used by institutional traders worldwide</li>
               </ul>
 
-              <p><strong className="text-slate-100">Quick Start:</strong></p>
+              <p><strong className="text-stone-900 dark:text-slate-100">Quick Start:</strong></p>
               <ol className="list-decimal list-inside space-y-1.5 ml-2">
-                <li>Pick <strong className="text-slate-100">Stock Analysis</strong> or <strong className="text-slate-100">Put Options</strong> from the sidebar</li>
-                <li>Enter a stock ticker (e.g., AAPL, MSFT, GOOGL) &mdash; or use the quick-switch in the header (press <kbd className="px-1 bg-slate-800 rounded">/</kbd>)</li>
+                <li>Pick <strong className="text-stone-900 dark:text-slate-100">Stock Analysis</strong> or <strong className="text-stone-900 dark:text-slate-100">Put Options</strong> from the sidebar</li>
+                <li>Enter a stock ticker (e.g., AAPL, MSFT, GOOGL) &mdash; or use the quick-switch in the header (press <kbd className="px-1 bg-stone-100 dark:bg-slate-800 rounded">/</kbd>)</li>
                 <li>Set your desired date range</li>
-                <li>Click <strong className="text-slate-100">Load Data</strong></li>
+                <li>Click <strong className="text-stone-900 dark:text-slate-100">Load Data</strong></li>
                 <li>Explore the different analysis tabs</li>
               </ol>
             </div>
@@ -187,15 +187,15 @@ export function LearnPage() {
             <details className="mb-6">
               <summary>New to Stock Analysis? Start Here</summary>
               <div className="details-content space-y-3">
-                <p><strong className="text-slate-100">Recommended Learning Path:</strong></p>
+                <p><strong className="text-stone-900 dark:text-slate-100">Recommended Learning Path:</strong></p>
                 <ol className="list-decimal list-inside space-y-1.5">
-                  <li><strong className="text-slate-100">Understand the basics of stock charts</strong> &mdash; How price and volume are displayed</li>
-                  <li><strong className="text-slate-100">Learn about moving averages</strong> &mdash; The foundation of trend analysis</li>
-                  <li><strong className="text-slate-100">Study drawdowns</strong> &mdash; Critical for understanding risk</li>
-                  <li><strong className="text-slate-100">Explore technical indicators</strong> &mdash; RSI and MACD for momentum analysis</li>
-                  <li><strong className="text-slate-100">Graduate to options</strong> &mdash; Only after solid stock fundamentals</li>
+                  <li><strong className="text-stone-900 dark:text-slate-100">Understand the basics of stock charts</strong> &mdash; How price and volume are displayed</li>
+                  <li><strong className="text-stone-900 dark:text-slate-100">Learn about moving averages</strong> &mdash; The foundation of trend analysis</li>
+                  <li><strong className="text-stone-900 dark:text-slate-100">Study drawdowns</strong> &mdash; Critical for understanding risk</li>
+                  <li><strong className="text-stone-900 dark:text-slate-100">Explore technical indicators</strong> &mdash; RSI and MACD for momentum analysis</li>
+                  <li><strong className="text-stone-900 dark:text-slate-100">Graduate to options</strong> &mdash; Only after solid stock fundamentals</li>
                 </ol>
-                <p className="mt-3"><strong className="text-slate-100">Beginner Resources:</strong></p>
+                <p className="mt-3"><strong className="text-stone-900 dark:text-slate-100">Beginner Resources:</strong></p>
                 <div className="space-y-1.5">
                   <a href="https://www.investopedia.com/stocks-4427785" target="_blank" rel="noopener noreferrer" className="ref-link">Investopedia: Stock Basics</a>
                   <a href="https://www.khanacademy.org/economics-finance-domain/core-finance/stock-and-bonds" target="_blank" rel="noopener noreferrer" className="ref-link">Khan Academy: Stocks and Bonds</a>
@@ -209,42 +209,42 @@ export function LearnPage() {
             {/* ═══════════════════════ */}
             {/* 2. STOCK ANALYSIS */}
             {/* ═══════════════════════ */}
-            <h2 id="stock-analysis" className="text-2xl font-bold text-slate-100 mb-2 scroll-mt-24">
+            <h2 id="stock-analysis" className="text-2xl font-bold text-stone-900 dark:text-slate-100 mb-2 scroll-mt-24">
               2. Stock Analysis Page
             </h2>
-            <p className="text-sm text-slate-400 mb-5 italic">
-              Go to <Link to="/stock" className="text-indigo-400 hover:text-indigo-300 underline">Stock Analysis</Link> to use these features.
+            <p className="text-sm text-stone-600 dark:text-slate-400 mb-5 italic">
+              Go to <Link to="/stock" className="text-indigo-700 dark:text-indigo-400 hover:text-indigo-700 hover:dark:text-indigo-300 underline">Stock Analysis</Link> to use these features.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
-                <h3 className="text-lg font-semibold text-slate-100 mb-3">Gradient Coloring</h3>
-                <div className="text-sm text-slate-300 leading-relaxed space-y-3">
-                  <p>The price chart uses a color gradient to show how far the current price is from the rolling high. This visualization technique helps you instantly identify the stock's position relative to recent performance &mdash; a key concept in <strong className="text-slate-100">relative strength analysis</strong>.</p>
-                  <p><strong className="text-slate-100">Color Interpretation:</strong></p>
+                <h3 className="text-lg font-semibold text-stone-900 dark:text-slate-100 mb-3">Gradient Coloring</h3>
+                <div className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed space-y-3">
+                  <p>The price chart uses a color gradient to show how far the current price is from the rolling high. This visualization technique helps you instantly identify the stock's position relative to recent performance &mdash; a key concept in <strong className="text-stone-900 dark:text-slate-100">relative strength analysis</strong>.</p>
+                  <p><strong className="text-stone-900 dark:text-slate-100">Color Interpretation:</strong></p>
                   <ul className="space-y-1.5 ml-2">
-                    <li><span className="inline-block w-3 h-3 rounded-full bg-emerald-500 mr-2 align-middle" /><strong className="text-emerald-400">Green shades</strong> = Price is at or near the rolling high (strong relative position)</li>
-                    <li><span className="inline-block w-3 h-3 rounded-full bg-red-500 mr-2 align-middle" /><strong className="text-red-400">Red shades</strong> = Price is below the rolling high (pullback/correction territory)</li>
+                    <li><span className="inline-block w-3 h-3 rounded-full bg-emerald-500 mr-2 align-middle" /><strong className="text-emerald-700 dark:text-emerald-400">Green shades</strong> = Price is at or near the rolling high (strong relative position)</li>
+                    <li><span className="inline-block w-3 h-3 rounded-full bg-red-500 mr-2 align-middle" /><strong className="text-red-700 dark:text-red-400">Red shades</strong> = Price is below the rolling high (pullback/correction territory)</li>
                     <li>Color intensity = Magnitude of deviation (darker = further from high)</li>
                   </ul>
                 </div>
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-slate-100 mb-3">Rolling High Lookback</h3>
-                <div className="text-sm text-slate-300 leading-relaxed space-y-3">
-                  <p>The <strong className="text-slate-100">Rolling High Lookback</strong> setting controls the window for calculating the reference high.</p>
+                <h3 className="text-lg font-semibold text-stone-900 dark:text-slate-100 mb-3">Rolling High Lookback</h3>
+                <div className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed space-y-3">
+                  <p>The <strong className="text-stone-900 dark:text-slate-100">Rolling High Lookback</strong> setting controls the window for calculating the reference high.</p>
                   <ul className="list-disc list-inside space-y-1.5 ml-2">
-                    <li><strong className="text-slate-100">Short (5-30 days):</strong> Captures minor pullbacks, swing trading.</li>
-                    <li><strong className="text-slate-100">Medium (30-60 days):</strong> Balanced view; position traders.</li>
-                    <li><strong className="text-slate-100">Long (60-200 days):</strong> Major trends and significant drawdowns.</li>
+                    <li><strong className="text-stone-900 dark:text-slate-100">Short (5-30 days):</strong> Captures minor pullbacks, swing trading.</li>
+                    <li><strong className="text-stone-900 dark:text-slate-100">Medium (30-60 days):</strong> Balanced view; position traders.</li>
+                    <li><strong className="text-stone-900 dark:text-slate-100">Long (60-200 days):</strong> Major trends and significant drawdowns.</li>
                   </ul>
                 </div>
               </div>
             </div>
 
-            <p className="text-sm text-slate-300 leading-relaxed mb-6">
-              <strong className="text-slate-100">Volume Bars:</strong> The lower section shows trading volume. Volume is the &quot;fuel&quot; of price movements &mdash; higher volume during price moves indicates stronger conviction and often more sustainable trends.
+            <p className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed mb-6">
+              <strong className="text-stone-900 dark:text-slate-100">Volume Bars:</strong> The lower section shows trading volume. Volume is the &quot;fuel&quot; of price movements &mdash; higher volume during price moves indicates stronger conviction and often more sustainable trends.
             </p>
 
             <div className="section-divider" />
@@ -252,12 +252,12 @@ export function LearnPage() {
             {/* ═══════════════════════ */}
             {/* 3. DRAWDOWN */}
             {/* ═══════════════════════ */}
-            <h2 id="drawdown" className="text-2xl font-bold text-slate-100 mb-4 scroll-mt-24">
+            <h2 id="drawdown" className="text-2xl font-bold text-stone-900 dark:text-slate-100 mb-4 scroll-mt-24">
               3. Drawdown Analysis Tab
             </h2>
 
-            <div className="text-sm text-slate-300 leading-relaxed space-y-3 mb-6">
-              <p>Drawdown analysis is one of the most important risk management tools. A <strong className="text-slate-100">drawdown</strong> measures the peak-to-trough decline before a new peak is achieved.</p>
+            <div className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed space-y-3 mb-6">
+              <p>Drawdown analysis is one of the most important risk management tools. A <strong className="text-stone-900 dark:text-slate-100">drawdown</strong> measures the peak-to-trough decline before a new peak is achieved.</p>
               <ul className="list-disc list-inside space-y-1 ml-2">
                 <li>Assess realistic downside risk (not just volatility)</li>
                 <li>Set appropriate position sizes</li>
@@ -269,17 +269,17 @@ export function LearnPage() {
               <div className="metric-explain">
                 <div className="metric-val">ATH</div>
                 <div className="metric-lbl">All-Time High</div>
-                <p className="text-xs text-slate-400 mt-2">The highest price reached in the selected period.</p>
+                <p className="text-xs text-stone-600 dark:text-slate-400 mt-2">The highest price reached in the selected period.</p>
               </div>
               <div className="metric-explain">
-                <div className="metric-val text-red-400">-12%</div>
+                <div className="metric-val text-red-700 dark:text-red-400">-12%</div>
                 <div className="metric-lbl">Current Drawdown</div>
-                <p className="text-xs text-slate-400 mt-2">How far below the ATH the current price is.</p>
+                <p className="text-xs text-stone-600 dark:text-slate-400 mt-2">How far below the ATH the current price is.</p>
               </div>
               <div className="metric-explain">
-                <div className="metric-val text-red-400">-35%</div>
+                <div className="metric-val text-red-700 dark:text-red-400">-35%</div>
                 <div className="metric-lbl">Max Drawdown</div>
-                <p className="text-xs text-slate-400 mt-2">The largest peak-to-trough decline in the period.</p>
+                <p className="text-xs text-stone-600 dark:text-slate-400 mt-2">The largest peak-to-trough decline in the period.</p>
               </div>
             </div>
 
@@ -287,7 +287,7 @@ export function LearnPage() {
               <summary>Why Drawdowns Matter More Than Volatility</summary>
               <div className="details-content space-y-3">
                 <p>Volatility (standard deviation) treats upside and downside equally. Drawdowns focus specifically on losses &mdash; what actually hurts investors.</p>
-                <p><strong className="text-slate-100">Key Insight:</strong> The math of losses is asymmetric. A 50% loss requires a 100% gain to recover.</p>
+                <p><strong className="text-stone-900 dark:text-slate-100">Key Insight:</strong> The math of losses is asymmetric. A 50% loss requires a 100% gain to recover.</p>
                 <div className="overflow-x-auto mt-3">
                   <table className="data-table">
                     <thead><tr><th>Drawdown</th><th>Gain Needed to Recover</th></tr></thead>
@@ -302,7 +302,7 @@ export function LearnPage() {
                 </div>
                 <div className="warning-box mt-4">
                   <p className="text-sm">
-                    <strong className="text-amber-400">Survivorship Bias:</strong> This dashboard analyzes prominent publicly-traded stocks. These are survivors. Many stocks experience drawdowns they never recover from.
+                    <strong className="text-amber-700 dark:text-amber-400">Survivorship Bias:</strong> This dashboard analyzes prominent publicly-traded stocks. These are survivors. Many stocks experience drawdowns they never recover from.
                   </p>
                 </div>
                 <RefLinks topic="drawdown" />
@@ -314,30 +314,30 @@ export function LearnPage() {
             {/* ═══════════════════════ */}
             {/* 4. PUT OPTIONS */}
             {/* ═══════════════════════ */}
-            <h2 id="options" className="text-2xl font-bold text-slate-100 mb-4 scroll-mt-24">
+            <h2 id="options" className="text-2xl font-bold text-stone-900 dark:text-slate-100 mb-4 scroll-mt-24">
               4. Put Options
             </h2>
 
             <div className="info-box mb-5">
-              <p className="text-sm text-slate-200">
-                Visit the <Link to="/options" className="text-purple-400 hover:text-purple-300 underline">Put Options page</Link> to explore real historical option chains, IV smiles, payoffs, and Greek calculators.
+              <p className="text-sm text-stone-800 dark:text-slate-200">
+                Visit the <Link to="/options" className="text-purple-700 dark:text-purple-400 hover:text-purple-700 hover:dark:text-purple-300 underline">Put Options page</Link> to explore real historical option chains, IV smiles, payoffs, and Greek calculators.
               </p>
             </div>
 
             <div className="warning-box mb-5">
               <p className="text-sm">
-                <strong className="text-amber-400">Risk Disclaimer:</strong> Options trading involves substantial risk of loss. Buying options risks the entire premium; selling options can expose you to losses far exceeding margin. This dashboard is for <strong className="text-slate-100">educational purposes only</strong>.
+                <strong className="text-amber-700 dark:text-amber-400">Risk Disclaimer:</strong> Options trading involves substantial risk of loss. Buying options risks the entire premium; selling options can expose you to losses far exceeding margin. This dashboard is for <strong className="text-stone-900 dark:text-slate-100">educational purposes only</strong>.
               </p>
             </div>
 
-            <div className="text-sm text-slate-300 leading-relaxed space-y-3 mb-5">
-              <p><strong className="text-slate-100">What is a Put Option?</strong> A put option gives you the right (but not obligation) to <strong className="text-slate-100">sell</strong> a stock at a specific price (strike) before a specific date (expiration). You pay a premium for this right.</p>
+            <div className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed space-y-3 mb-5">
+              <p><strong className="text-stone-900 dark:text-slate-100">What is a Put Option?</strong> A put option gives you the right (but not obligation) to <strong className="text-stone-900 dark:text-slate-100">sell</strong> a stock at a specific price (strike) before a specific date (expiration). You pay a premium for this right.</p>
 
-              <p><strong className="text-slate-100">Key Concept &mdash; Moneyness:</strong></p>
+              <p><strong className="text-stone-900 dark:text-slate-100">Key Concept &mdash; Moneyness:</strong></p>
               <ul className="list-disc list-inside space-y-1 ml-2">
-                <li><strong className="text-slate-100">ITM:</strong> Strike above stock price (for puts) &mdash; intrinsic value.</li>
-                <li><strong className="text-slate-100">ATM:</strong> Strike near stock price.</li>
-                <li><strong className="text-slate-100">OTM:</strong> Strike below stock price (for puts) &mdash; only time value.</li>
+                <li><strong className="text-stone-900 dark:text-slate-100">ITM:</strong> Strike above stock price (for puts) &mdash; intrinsic value.</li>
+                <li><strong className="text-stone-900 dark:text-slate-100">ATM:</strong> Strike near stock price.</li>
+                <li><strong className="text-stone-900 dark:text-slate-100">OTM:</strong> Strike below stock price (for puts) &mdash; only time value.</li>
               </ul>
             </div>
 
@@ -355,16 +355,16 @@ export function LearnPage() {
                       <tr><th>Greek</th><th>Measures</th><th>Intuition</th></tr>
                     </thead>
                     <tbody>
-                      <tr><td><strong className="text-slate-100">Delta</strong></td><td>Price sensitivity to stock movement</td><td>&quot;How much does my option move if the stock moves $1?&quot;</td></tr>
-                      <tr><td><strong className="text-slate-100">Gamma</strong></td><td>Rate of change of delta</td><td>&quot;How stable is my delta?&quot;</td></tr>
-                      <tr><td><strong className="text-slate-100">Theta</strong></td><td>Time decay</td><td>&quot;How much value do I lose each day?&quot;</td></tr>
-                      <tr><td><strong className="text-slate-100">Vega</strong></td><td>Volatility sensitivity</td><td>&quot;How much does my option move if volatility changes?&quot;</td></tr>
-                      <tr><td><strong className="text-slate-100">Rho</strong></td><td>Interest rate sensitivity</td><td>&quot;How does my option react to rate changes?&quot;</td></tr>
+                      <tr><td><strong className="text-stone-900 dark:text-slate-100">Delta</strong></td><td>Price sensitivity to stock movement</td><td>&quot;How much does my option move if the stock moves $1?&quot;</td></tr>
+                      <tr><td><strong className="text-stone-900 dark:text-slate-100">Gamma</strong></td><td>Rate of change of delta</td><td>&quot;How stable is my delta?&quot;</td></tr>
+                      <tr><td><strong className="text-stone-900 dark:text-slate-100">Theta</strong></td><td>Time decay</td><td>&quot;How much value do I lose each day?&quot;</td></tr>
+                      <tr><td><strong className="text-stone-900 dark:text-slate-100">Vega</strong></td><td>Volatility sensitivity</td><td>&quot;How much does my option move if volatility changes?&quot;</td></tr>
+                      <tr><td><strong className="text-stone-900 dark:text-slate-100">Rho</strong></td><td>Interest rate sensitivity</td><td>&quot;How does my option react to rate changes?&quot;</td></tr>
                     </tbody>
                   </table>
                 </div>
                 <p>
-                  <strong className="text-slate-100">Important: Theta is non-linear.</strong> Time decay accelerates sharply in the final 30-45 days before expiration. Black-Scholes models this with a square-root-of-time relationship; the dashboard&apos;s Time Decay calculator uses a linear approximation for clarity.
+                  <strong className="text-stone-900 dark:text-slate-100">Important: Theta is non-linear.</strong> Time decay accelerates sharply in the final 30-45 days before expiration. Black-Scholes models this with a square-root-of-time relationship; the dashboard&apos;s Time Decay calculator uses a linear approximation for clarity.
                 </p>
                 <RefLinks topic="greeks" />
               </div>
@@ -375,22 +375,22 @@ export function LearnPage() {
             {/* ═══════════════════════ */}
             {/* 5. INDICATORS */}
             {/* ═══════════════════════ */}
-            <h2 id="indicators" className="text-2xl font-bold text-slate-100 mb-4 scroll-mt-24">
+            <h2 id="indicators" className="text-2xl font-bold text-stone-900 dark:text-slate-100 mb-4 scroll-mt-24">
               5. Technical Indicators
             </h2>
 
-            <p className="text-sm text-slate-300 leading-relaxed mb-5">
+            <p className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed mb-5">
               Technical indicators are mathematical calculations based on price, volume, or open interest. They help identify trends, momentum, volatility, and potential reversal points.
             </p>
 
             {/* Anchored sub-sections so /learn#rsi etc. work directly */}
-            <h3 id="rsi" className="text-lg font-semibold text-slate-100 mb-3 scroll-mt-24">RSI (Relative Strength Index)</h3>
+            <h3 id="rsi" className="text-lg font-semibold text-stone-900 dark:text-slate-100 mb-3 scroll-mt-24">RSI (Relative Strength Index)</h3>
             <div className="card-lg mb-6">
-              <div className="text-sm text-slate-300 leading-relaxed space-y-3">
-                <p><strong className="text-slate-100">Creator:</strong> J. Welles Wilder Jr. (1978)</p>
-                <p><strong className="text-slate-100">Math (Simplified):</strong></p>
-                <p className="font-mono text-xs bg-slate-800/60 p-2 rounded">RSI = 100 - (100 / (1 + RS)), where RS = Average Gain / Average Loss over N periods</p>
-                <p><strong className="text-slate-100">Interpretation:</strong></p>
+              <div className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed space-y-3">
+                <p><strong className="text-stone-900 dark:text-slate-100">Creator:</strong> J. Welles Wilder Jr. (1978)</p>
+                <p><strong className="text-stone-900 dark:text-slate-100">Math (Simplified):</strong></p>
+                <p className="font-mono text-xs bg-stone-100/60 dark:bg-slate-800/60 p-2 rounded">RSI = 100 - (100 / (1 + RS)), where RS = Average Gain / Average Loss over N periods</p>
+                <p><strong className="text-stone-900 dark:text-slate-100">Interpretation:</strong></p>
                 <ul className="list-disc list-inside space-y-1 ml-2">
                   <li><strong>Above 70:</strong> Potentially overbought.</li>
                   <li><strong>Below 30:</strong> Potentially oversold.</li>
@@ -400,10 +400,10 @@ export function LearnPage() {
               <details className="mt-4"><summary>References: RSI</summary><div className="details-content"><RefLinks topic="rsi" /></div></details>
             </div>
 
-            <h3 id="macd" className="text-lg font-semibold text-slate-100 mb-3 scroll-mt-24">MACD</h3>
+            <h3 id="macd" className="text-lg font-semibold text-stone-900 dark:text-slate-100 mb-3 scroll-mt-24">MACD</h3>
             <div className="card-lg mb-6">
-              <div className="text-sm text-slate-300 leading-relaxed space-y-3">
-                <p><strong className="text-slate-100">Creator:</strong> Gerald Appel (1970s)</p>
+              <div className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed space-y-3">
+                <p><strong className="text-stone-900 dark:text-slate-100">Creator:</strong> Gerald Appel (1970s)</p>
                 <ul className="list-disc list-inside space-y-1 ml-2">
                   <li><strong>MACD Line:</strong> 12-period EMA minus 26-period EMA.</li>
                   <li><strong>Signal Line:</strong> 9-period EMA of the MACD line.</li>
@@ -413,10 +413,10 @@ export function LearnPage() {
               <details className="mt-4"><summary>References: MACD</summary><div className="details-content"><RefLinks topic="macd" /></div></details>
             </div>
 
-            <h3 id="bollinger" className="text-lg font-semibold text-slate-100 mb-3 scroll-mt-24">Bollinger Bands</h3>
+            <h3 id="bollinger" className="text-lg font-semibold text-stone-900 dark:text-slate-100 mb-3 scroll-mt-24">Bollinger Bands</h3>
             <div className="card-lg mb-6">
-              <div className="text-sm text-slate-300 leading-relaxed space-y-3">
-                <p><strong className="text-slate-100">Creator:</strong> John Bollinger (1980s)</p>
+              <div className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed space-y-3">
+                <p><strong className="text-stone-900 dark:text-slate-100">Creator:</strong> John Bollinger (1980s)</p>
                 <ul className="list-disc list-inside space-y-1 ml-2">
                   <li><strong>Middle Band:</strong> 20-period simple moving average.</li>
                   <li><strong>Upper Band:</strong> Middle band + 2 standard deviations.</li>
@@ -427,9 +427,9 @@ export function LearnPage() {
               <details className="mt-4"><summary>References: Bollinger Bands</summary><div className="details-content"><RefLinks topic="bollinger" /></div></details>
             </div>
 
-            <h3 id="moving-averages" className="text-lg font-semibold text-slate-100 mb-3 scroll-mt-24">Moving Averages</h3>
+            <h3 id="moving-averages" className="text-lg font-semibold text-stone-900 dark:text-slate-100 mb-3 scroll-mt-24">Moving Averages</h3>
             <div className="card-lg mb-6">
-              <div className="text-sm text-slate-300 leading-relaxed space-y-3">
+              <div className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed space-y-3">
                 <ul className="list-disc list-inside space-y-1 ml-2">
                   <li><strong>SMA:</strong> Equal weight to all prices in the period.</li>
                   <li><strong>EMA:</strong> More weight to recent prices, reacts faster.</li>
@@ -455,17 +455,17 @@ export function LearnPage() {
             {/* ═══════════════════════ */}
             {/* 6. LIMITATIONS */}
             {/* ═══════════════════════ */}
-            <h2 id="limitations" className="text-2xl font-bold text-slate-100 mb-4 scroll-mt-24">
+            <h2 id="limitations" className="text-2xl font-bold text-stone-900 dark:text-slate-100 mb-4 scroll-mt-24">
               6. What Technical Analysis Can&apos;t Do
             </h2>
 
-            <div className="text-sm text-slate-300 leading-relaxed space-y-3 mb-6">
+            <div className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed space-y-3 mb-6">
               <ul className="list-disc list-inside space-y-2 ml-2">
-                <li><strong className="text-slate-100">No predictive guarantee:</strong> Patterns describe past behaviour. Markets respond to news, earnings, policy changes.</li>
-                <li><strong className="text-slate-100">Efficient Market Hypothesis:</strong> Public information is rapidly priced in.</li>
-                <li><strong className="text-slate-100">Data mining risk:</strong> With enough indicators and parameters, you can find &quot;patterns&quot; in random data.</li>
-                <li><strong className="text-slate-100">Self-fulfilling vs self-defeating:</strong> Popular signals (200-day MA) work partly because traders act on them &mdash; widespread adoption can erode effectiveness.</li>
-                <li><strong className="text-slate-100">No substitute for fundamentals:</strong> Technicals show <em>what</em>, not <em>why</em>.</li>
+                <li><strong className="text-stone-900 dark:text-slate-100">No predictive guarantee:</strong> Patterns describe past behaviour. Markets respond to news, earnings, policy changes.</li>
+                <li><strong className="text-stone-900 dark:text-slate-100">Efficient Market Hypothesis:</strong> Public information is rapidly priced in.</li>
+                <li><strong className="text-stone-900 dark:text-slate-100">Data mining risk:</strong> With enough indicators and parameters, you can find &quot;patterns&quot; in random data.</li>
+                <li><strong className="text-stone-900 dark:text-slate-100">Self-fulfilling vs self-defeating:</strong> Popular signals (200-day MA) work partly because traders act on them &mdash; widespread adoption can erode effectiveness.</li>
+                <li><strong className="text-stone-900 dark:text-slate-100">No substitute for fundamentals:</strong> Technicals show <em>what</em>, not <em>why</em>.</li>
               </ul>
             </div>
 
@@ -474,7 +474,7 @@ export function LearnPage() {
             {/* ═══════════════════════ */}
             {/* 7. FAQ */}
             {/* ═══════════════════════ */}
-            <h2 id="faq" className="text-2xl font-bold text-slate-100 mb-4 scroll-mt-24">
+            <h2 id="faq" className="text-2xl font-bold text-stone-900 dark:text-slate-100 mb-4 scroll-mt-24">
               7. Tips &amp; FAQ
             </h2>
 
@@ -482,8 +482,8 @@ export function LearnPage() {
               <details>
                 <summary>Why is my stock showing red even though it&apos;s up today?</summary>
                 <div className="details-content space-y-2">
-                  <p>The colour reflects the distance from the <strong className="text-slate-100">rolling high</strong>, not the daily change.</p>
-                  <p><strong className="text-slate-100">Example:</strong> A stock at $100 two weeks ago, dropped to $90, today at $93 is up 3.3% but still 7% below the rolling high (red).</p>
+                  <p>The colour reflects the distance from the <strong className="text-stone-900 dark:text-slate-100">rolling high</strong>, not the daily change.</p>
+                  <p><strong className="text-stone-900 dark:text-slate-100">Example:</strong> A stock at $100 two weeks ago, dropped to $90, today at $93 is up 3.3% but still 7% below the rolling high (red).</p>
                 </div>
               </details>
 
@@ -491,18 +491,18 @@ export function LearnPage() {
                 <summary>How do I get technical indicators to work?</summary>
                 <div className="details-content space-y-2">
                   <ol className="list-decimal list-inside space-y-1.5">
-                    <li>Get a free API key from <a href="https://www.alphavantage.co/support/#api-key" target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300 underline">Alpha Vantage</a></li>
+                    <li>Get a free API key from <a href="https://www.alphavantage.co/support/#api-key" target="_blank" rel="noopener noreferrer" className="text-indigo-700 dark:text-indigo-400 hover:text-indigo-700 hover:dark:text-indigo-300 underline">Alpha Vantage</a></li>
                     <li>Enter the key in the Technical Indicators section</li>
                     <li>Select indicators &amp; click Load Data</li>
                   </ol>
-                  <p className="mt-2"><strong className="text-slate-100">Free tier:</strong> 5 calls/min, 500 calls/day.</p>
+                  <p className="mt-2"><strong className="text-stone-900 dark:text-slate-100">Free tier:</strong> 5 calls/min, 500 calls/day.</p>
                 </div>
               </details>
 
               <details>
                 <summary>Can I use this for real trading decisions?</summary>
                 <div className="details-content space-y-2">
-                  <p>This dashboard is for <strong className="text-slate-100">educational purposes only</strong>. It is not financial advice.</p>
+                  <p>This dashboard is for <strong className="text-stone-900 dark:text-slate-100">educational purposes only</strong>. It is not financial advice.</p>
                   <ul className="list-disc list-inside space-y-1 ml-2">
                     <li>Do your own research</li>
                     <li>Consult a registered financial professional</li>
@@ -524,7 +524,7 @@ export function LearnPage() {
           {/* Sticky right-rail TOC */}
           <aside className="hidden lg:block">
             <div className="sticky top-24">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+              <p className="text-xs font-semibold text-stone-600 dark:text-slate-400 uppercase tracking-wider mb-3">
                 On This Page
               </p>
               <nav className="space-y-1 text-sm">
@@ -532,7 +532,7 @@ export function LearnPage() {
                   <a
                     key={s.id}
                     href={`#${s.id}`}
-                    className="block px-3 py-1.5 rounded-md text-slate-400 hover:text-indigo-400 hover:bg-slate-800/40 transition-colors"
+                    className="block px-3 py-1.5 rounded-md text-stone-600 dark:text-slate-400 hover:text-indigo-700 hover:dark:text-indigo-400 hover:bg-stone-100/40 hover:dark:bg-slate-800/40 transition-colors"
                   >
                     {s.label}
                   </a>

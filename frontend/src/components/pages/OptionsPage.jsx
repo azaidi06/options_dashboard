@@ -61,31 +61,31 @@ function UnderlyingOHLCStrip({ ticker, date, ohlc, latest, expirationDate, expir
       : null;
   const moveColor =
     pctMove == null
-      ? 'text-slate-400'
+      ? 'text-stone-600 dark:text-slate-400'
       : pctMove > 0
-        ? 'text-emerald-400'
+        ? 'text-emerald-700 dark:text-emerald-400'
         : pctMove < 0
-          ? 'text-rose-400'
-          : 'text-slate-400';
+          ? 'text-rose-700 dark:text-rose-400'
+          : 'text-stone-600 dark:text-slate-400';
   const moveArrow = pctMove == null ? '·' : pctMove > 0 ? '▲' : pctMove < 0 ? '▼' : '·';
 
   return (
     <CardLg className="mb-6">
       <div className="flex items-baseline justify-between mb-3 gap-3 flex-wrap">
-        <h3 className="text-sm font-semibold text-slate-300">
+        <h3 className="text-sm font-semibold text-stone-700 dark:text-slate-300">
           {ticker} on {date}
           {ohlc?.isExact === false && ohlc?.date && ohlc.date !== date && (
-            <span className="ml-2 text-xs font-normal text-amber-400">
+            <span className="ml-2 text-xs font-normal text-amber-700 dark:text-amber-400">
               (showing {ohlc.date} — closest available)
             </span>
           )}
           {range != null && (
-            <span className="ml-2 text-xs font-normal text-slate-500">
+            <span className="ml-2 text-xs font-normal text-stone-500 dark:text-slate-500">
               · range {formatCurrency(range)}
             </span>
           )}
         </h3>
-        <span className="text-xs text-slate-500">Underlying daily OHLC</span>
+        <span className="text-xs text-stone-500 dark:text-slate-500">Underlying daily OHLC</span>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {cells.map(({ label, value }) => (
@@ -96,7 +96,7 @@ function UnderlyingOHLCStrip({ ticker, date, ohlc, latest, expirationDate, expir
             ) : value != null ? (
               <div className="metric-value text-lg">{formatCurrency(value)}</div>
             ) : (
-              <div className="text-slate-500 text-sm">—</div>
+              <div className="text-stone-500 dark:text-slate-500 text-sm">—</div>
             )}
           </div>
         ))}
@@ -112,10 +112,10 @@ function UnderlyingOHLCStrip({ ticker, date, ohlc, latest, expirationDate, expir
               className={
                 'metric-value text-lg ' +
                 (ohlc.pctChange1d > 0
-                  ? 'text-emerald-400'
+                  ? 'text-emerald-700 dark:text-emerald-400'
                   : ohlc.pctChange1d < 0
-                    ? 'text-rose-400'
-                    : 'text-slate-200')
+                    ? 'text-rose-700 dark:text-rose-400'
+                    : 'text-stone-800 dark:text-slate-200')
               }
             >
               {ohlc.pctChange1d > 0 ? '▲' : ohlc.pctChange1d < 0 ? '▼' : '·'}{' '}
@@ -123,7 +123,7 @@ function UnderlyingOHLCStrip({ ticker, date, ohlc, latest, expirationDate, expir
               {ohlc.pctChange1d.toFixed(2)}%
             </div>
           ) : (
-            <div className="text-slate-500 text-sm">—</div>
+            <div className="text-stone-500 dark:text-slate-500 text-sm">—</div>
           )}
         </div>
 
@@ -137,10 +137,10 @@ function UnderlyingOHLCStrip({ ticker, date, ohlc, latest, expirationDate, expir
               className={
                 'metric-value text-lg ' +
                 (ohlc.pctChange2d > 0
-                  ? 'text-emerald-400'
+                  ? 'text-emerald-700 dark:text-emerald-400'
                   : ohlc.pctChange2d < 0
-                    ? 'text-rose-400'
-                    : 'text-slate-200')
+                    ? 'text-rose-700 dark:text-rose-400'
+                    : 'text-stone-800 dark:text-slate-200')
               }
             >
               {ohlc.pctChange2d > 0 ? '▲' : ohlc.pctChange2d < 0 ? '▼' : '·'}{' '}
@@ -148,7 +148,7 @@ function UnderlyingOHLCStrip({ ticker, date, ohlc, latest, expirationDate, expir
               {ohlc.pctChange2d.toFixed(2)}%
             </div>
           ) : (
-            <div className="text-slate-500 text-sm">—</div>
+            <div className="text-stone-500 dark:text-slate-500 text-sm">—</div>
           )}
         </div>
 
@@ -163,13 +163,13 @@ function UnderlyingOHLCStrip({ ticker, date, ohlc, latest, expirationDate, expir
             <>
               <div className="metric-value text-lg">{formatCurrency(compareClose)}</div>
               {compareDate && (
-                <div className="text-xs text-slate-500 mt-0.5">{compareDate}</div>
+                <div className="text-xs text-stone-500 dark:text-slate-500 mt-0.5">{compareDate}</div>
               )}
             </>
           ) : sameDay ? (
-            <div className="text-slate-500 text-sm">same as quote date</div>
+            <div className="text-stone-500 dark:text-slate-500 text-sm">same as quote date</div>
           ) : (
-            <div className="text-slate-500 text-sm">—</div>
+            <div className="text-stone-500 dark:text-slate-500 text-sm">—</div>
           )}
         </div>
 
@@ -184,12 +184,12 @@ function UnderlyingOHLCStrip({ ticker, date, ohlc, latest, expirationDate, expir
               {pctMove.toFixed(2)}%
             </div>
           ) : (
-            <div className="text-slate-500 text-sm">—</div>
+            <div className="text-stone-500 dark:text-slate-500 text-sm">—</div>
           )}
         </div>
       </div>
       {error && (
-        <p className="mt-3 text-xs text-amber-400">
+        <p className="mt-3 text-xs text-amber-700 dark:text-amber-400">
           Could not load underlying price for this date: {error}
         </p>
       )}
@@ -210,7 +210,7 @@ function OptionTypeToggle({ value, onChange }) {
     <div
       role="tablist"
       aria-label="Option type"
-      className="flex items-center gap-1 rounded-full border border-slate-700/60 bg-slate-900/60 backdrop-blur px-1 py-1 w-fit"
+      className="flex items-center gap-1 rounded-full border border-stone-300/60 dark:border-slate-700/60 bg-white/60 dark:bg-slate-900/60 backdrop-blur px-1 py-1 w-fit"
     >
       {items.map((item) => {
         const active = item.id === value;
@@ -224,8 +224,8 @@ function OptionTypeToggle({ value, onChange }) {
             className={
               'px-4 py-1 text-xs font-semibold rounded-full transition-colors ' +
               (active
-                ? 'bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-500/40'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40')
+                ? 'bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500/40'
+                : 'text-stone-600 dark:text-slate-400 hover:text-stone-800 hover:dark:text-slate-200 hover:bg-stone-100/40 hover:dark:bg-slate-800/40')
             }
           >
             {item.label}
@@ -329,7 +329,7 @@ export function OptionsPage() {
         {/* Selection Controls */}
         <CardLg className="mb-6">
           <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
-            <h2 className="text-base font-semibold text-slate-200">Select Data</h2>
+            <h2 className="text-base font-semibold text-stone-800 dark:text-slate-200">Select Data</h2>
             <OptionTypeToggle value={optionType} onChange={setOptionType} />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -386,10 +386,10 @@ export function OptionsPage() {
           </div>
 
           {dateRange.data && (
-            <p className="mt-3 text-xs text-slate-500">
+            <p className="mt-3 text-xs text-stone-500 dark:text-slate-500">
               Data available: {dateRange.data.min_date} to {dateRange.data.max_date}
               {' · '}
-              <span className="text-indigo-400">{optionType === 'call' ? 'Calls' : 'Puts'}</span>
+              <span className="text-indigo-700 dark:text-indigo-400">{optionType === 'call' ? 'Calls' : 'Puts'}</span>
             </p>
           )}
 
@@ -448,11 +448,11 @@ export function OptionsPage() {
               <CardLg>
                 <div className="flex items-center justify-center py-16">
                   <div className="text-center max-w-md">
-                    <FileSearch className="w-12 h-12 text-slate-600 mx-auto mb-4" strokeWidth={1.5} />
-                    <p className="text-slate-300 font-semibold mb-1">
+                    <FileSearch className="w-12 h-12 text-stone-400 dark:text-slate-600 mx-auto mb-4" strokeWidth={1.5} />
+                    <p className="text-stone-700 dark:text-slate-300 font-semibold mb-1">
                       {!selectedDate ? 'Loading available dates…' : 'No chain loaded yet'}
                     </p>
-                    <p className="text-slate-500 text-sm">
+                    <p className="text-stone-500 dark:text-slate-500 text-sm">
                       Pick a ticker, quote date, and expiration above, then click Load Data.
                     </p>
                   </div>
@@ -470,9 +470,9 @@ export function OptionsPage() {
               <CardLg>
                 <div className="flex items-center justify-center py-16">
                   <div className="text-center max-w-md">
-                    <ChevronsRight className="w-12 h-12 text-slate-600 mx-auto mb-4" strokeWidth={1.5} />
-                    <p className="text-slate-300 font-semibold mb-1">No IV smile yet</p>
-                    <p className="text-slate-500 text-sm">
+                    <ChevronsRight className="w-12 h-12 text-stone-400 dark:text-slate-600 mx-auto mb-4" strokeWidth={1.5} />
+                    <p className="text-stone-700 dark:text-slate-300 font-semibold mb-1">No IV smile yet</p>
+                    <p className="text-stone-500 dark:text-slate-500 text-sm">
                       Select a ticker, quote date, and expiration to view the IV smile.
                     </p>
                   </div>
@@ -502,8 +502,8 @@ export function OptionsPage() {
 
         {/* Disclaimer */}
         <div className="warning-box mt-8">
-          <p className="text-sm text-slate-300">
-            <strong className="text-amber-400">Disclaimer:</strong> This dashboard is for educational
+          <p className="text-sm text-stone-700 dark:text-slate-300">
+            <strong className="text-amber-700 dark:text-amber-400">Disclaimer:</strong> This dashboard is for educational
             purposes only. Options trading involves significant risk and is not suitable for all investors.
             Always do your own research and consider consulting with a financial professional.
           </p>

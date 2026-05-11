@@ -8,6 +8,7 @@ import { Input } from '../common/Input';
 import { CardLg } from '../common/Card';
 import { formatCurrency, formatPercent, formatGreek } from '../../utils/formatters';
 import { useContractHistory } from '../../hooks/useOptionsData';
+import { useTheme } from '../../theme/ThemeContext';
 
 function isITM(close, strike, optionType) {
   if (close == null || strike == null) return false;
@@ -24,6 +25,7 @@ function ItmSparkline({
   entryMark,
   entryAsk,
 }) {
+  const t = useTheme().tokens;
   const series = dailyCloses.map((r) => ({
     date: r.date,
     close: r.close,
@@ -48,20 +50,20 @@ function ItmSparkline({
   return (
     <div>
       <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-2 text-xs">
-        <span className="text-slate-300">
+        <span className="text-stone-700 dark:text-slate-300">
           Strike <span className="font-semibold">{formatCurrency(strike, 2)}</span>
         </span>
-        <span className="text-slate-400">
+        <span className="text-stone-600 dark:text-slate-400">
           Closed ITM on{' '}
-          <span className="text-emerald-400 font-semibold">{itmCount}</span> of {total} trading
+          <span className="text-emerald-700 dark:text-emerald-400 font-semibold">{itmCount}</span> of {total} trading
           days ({formatPercent(total ? (itmCount / total) * 100 : 0, 0)})
         </span>
         {expirationDate && (
-          <span className="text-slate-400">
+          <span className="text-stone-600 dark:text-slate-400">
             At expiry:{' '}
             <span
               className={
-                expirationItm ? 'text-emerald-400 font-semibold' : 'text-rose-400 font-semibold'
+                expirationItm ? 'text-emerald-700 dark:text-emerald-400 font-semibold' : 'text-rose-700 dark:text-rose-400 font-semibold'
               }
             >
               {expirationItm ? 'ITM' : 'OTM'}
@@ -78,29 +80,29 @@ function ItmSparkline({
             />
             <Tooltip
               contentStyle={{
-                background: '#0f172a',
-                border: '1px solid #334155',
+                background: t.surface,
+                border: `1px solid ${t.border}`,
                 borderRadius: 6,
                 fontSize: 12,
               }}
-              labelStyle={{ color: '#cbd5e1' }}
+              labelStyle={{ color: t.textMid }}
               formatter={(value) => [formatCurrency(value, 2), 'Close']}
             />
             <ReferenceLine
               y={strike}
-              stroke="#f59e0b"
+              stroke={t.warning}
               strokeDasharray="4 4"
               label={{
                 value: `Strike ${formatCurrency(strike, 2)}`,
                 position: 'right',
-                fill: '#f59e0b',
+                fill: t.warning,
                 fontSize: 11,
               }}
             />
             <Line
               type="monotone"
               dataKey="close"
-              stroke="#6366f1"
+              stroke={t.indigoStrong}
               strokeWidth={2}
               dot={(props) => {
                 const { cx, cy, payload } = props;
@@ -110,7 +112,7 @@ function ItmSparkline({
                     cx={cx}
                     cy={cy}
                     r={2.5}
-                    fill={payload.itm ? '#10b981' : '#475569'}
+                    fill={payload.itm ? t.positive : t.axis}
                     stroke="none"
                   />
                 );
@@ -132,24 +134,25 @@ function ItmSparkline({
 }
 
 function PnlSparkline({ history, entryMark, entryAsk, expirationDate }) {
+  const t = useTheme().tokens;
   // Use mid (mark) as the "entry premium" by default; users buying long
   // would actually pay closer to ask, so we surface both summaries.
   const entry = entryMark != null && entryMark > 0 ? entryMark : entryAsk;
   const rows = history.data?.data || [];
 
   if (history.loading) {
-    return <div className="mt-3 text-xs text-slate-500">Loading P/L history…</div>;
+    return <div className="mt-3 text-xs text-stone-500 dark:text-slate-500">Loading P/L history…</div>;
   }
   if (history.error) {
     return (
-      <div className="mt-3 text-xs text-amber-400">
+      <div className="mt-3 text-xs text-amber-700 dark:text-amber-400">
         Could not load P/L history: {history.error}
       </div>
     );
   }
   if (!entry || rows.length === 0) {
     return (
-      <div className="mt-3 text-xs text-slate-500">
+      <div className="mt-3 text-xs text-stone-500 dark:text-slate-500">
         No premium history available for this contract.
       </div>
     );
@@ -168,7 +171,7 @@ function PnlSparkline({ history, entryMark, entryAsk, expirationDate }) {
 
   if (series.length === 0) {
     return (
-      <div className="mt-3 text-xs text-slate-500">
+      <div className="mt-3 text-xs text-stone-500 dark:text-slate-500">
         No usable premium quotes in this window.
       </div>
     );
@@ -185,27 +188,27 @@ function PnlSparkline({ history, entryMark, entryAsk, expirationDate }) {
 
   const plColor = (v) =>
     v == null
-      ? 'text-slate-400'
+      ? 'text-stone-600 dark:text-slate-400'
       : v > 0
-        ? 'text-emerald-400'
+        ? 'text-emerald-700 dark:text-emerald-400'
         : v < 0
-          ? 'text-rose-400'
-          : 'text-slate-400';
+          ? 'text-rose-700 dark:text-rose-400'
+          : 'text-stone-600 dark:text-slate-400';
   const sign = (v) => (v == null ? '' : v >= 0 ? '+' : '');
 
   return (
-    <div className="mt-4 pt-4 border-t border-slate-800/80">
+    <div className="mt-4 pt-4 border-t border-stone-200/80 dark:border-slate-800/80">
       <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-2 text-xs">
-        <span className="text-slate-300">
+        <span className="text-stone-700 dark:text-slate-300">
           Entered at{' '}
           <span className="font-semibold">{formatCurrency(entry, 2)}</span>
-          <span className="text-slate-500"> /sh · ${(entry * 100).toFixed(0)} /contract</span>
+          <span className="text-stone-500 dark:text-slate-500"> /sh · ${(entry * 100).toFixed(0)} /contract</span>
         </span>
         <span className={plColor(plAtExpiry) + ' font-semibold'}>
           At expiry{expirationDate ? ` (${expirationDate})` : ''}: {sign(plAtExpiry)}
           {formatCurrency(plAtExpiry, 0)}
           {plPctAtExpiry != null && (
-            <span className="text-slate-500 ml-1 font-normal">
+            <span className="text-stone-500 dark:text-slate-500 ml-1 font-normal">
               ({sign(plPctAtExpiry)}{plPctAtExpiry.toFixed(1)}%)
             </span>
           )}
@@ -213,12 +216,12 @@ function PnlSparkline({ history, entryMark, entryAsk, expirationDate }) {
         <span className={plColor(best.plContract)}>
           Best: {sign(best.plContract)}
           {formatCurrency(best.plContract, 0)}
-          <span className="text-slate-500 ml-1">on {best.date}</span>
+          <span className="text-stone-500 dark:text-slate-500 ml-1">on {best.date}</span>
         </span>
         <span className={plColor(worst.plContract)}>
           Worst: {sign(worst.plContract)}
           {formatCurrency(worst.plContract, 0)}
-          <span className="text-slate-500 ml-1">on {worst.date}</span>
+          <span className="text-stone-500 dark:text-slate-500 ml-1">on {worst.date}</span>
         </span>
       </div>
       <div style={{ width: '100%', height: 110 }}>
@@ -227,12 +230,12 @@ function PnlSparkline({ history, entryMark, entryAsk, expirationDate }) {
             <YAxis domain={['auto', 'auto']} hide />
             <Tooltip
               contentStyle={{
-                background: '#0f172a',
-                border: '1px solid #334155',
+                background: t.surface,
+                border: `1px solid ${t.border}`,
                 borderRadius: 6,
                 fontSize: 12,
               }}
-              labelStyle={{ color: '#cbd5e1' }}
+              labelStyle={{ color: t.textMid }}
               formatter={(value, key) => {
                 if (key === 'premium') return [formatCurrency(value, 2), 'Premium'];
                 if (key === 'plContract') {
@@ -246,19 +249,19 @@ function PnlSparkline({ history, entryMark, entryAsk, expirationDate }) {
             />
             <ReferenceLine
               y={0}
-              stroke="#475569"
+              stroke={t.axis}
               strokeDasharray="4 4"
               label={{
                 value: 'Break-even',
                 position: 'right',
-                fill: '#64748b',
+                fill: t.textFaint,
                 fontSize: 11,
               }}
             />
             <Line
               type="monotone"
               dataKey="plContract"
-              stroke="#10b981"
+              stroke={t.positive}
               strokeWidth={2}
               dot={(props) => {
                 const { cx, cy, payload } = props;
@@ -268,7 +271,7 @@ function PnlSparkline({ history, entryMark, entryAsk, expirationDate }) {
                     cx={cx}
                     cy={cy}
                     r={2.5}
-                    fill={payload.plContract >= 0 ? '#10b981' : '#f43f5e'}
+                    fill={payload.plContract >= 0 ? t.positive : t.negative}
                     stroke="none"
                   />
                 );
@@ -322,7 +325,7 @@ export function OptionChain({
 
   if (!optionData || !optionData.data) {
     return (
-      <div className="text-slate-500 text-center py-8">
+      <div className="text-stone-500 dark:text-slate-500 text-center py-8">
         Select a date and expiration to view the option chain
       </div>
     );
@@ -373,17 +376,17 @@ export function OptionChain({
   };
 
   const SortIcon = ({ column }) => {
-    if (sortBy !== column) return <span className="text-slate-600">↕</span>;
-    return <span className="text-indigo-400">{sortDir === 'asc' ? '↑' : '↓'}</span>;
+    if (sortBy !== column) return <span className="text-stone-400 dark:text-slate-600">↕</span>;
+    return <span className="text-indigo-700 dark:text-indigo-400">{sortDir === 'asc' ? '↑' : '↓'}</span>;
   };
 
   return (
     <div>
-      <h3 className="text-base font-semibold mb-4 text-slate-200">{ticker} Option Chain</h3>
+      <h3 className="text-base font-semibold mb-4 text-stone-800 dark:text-slate-200">{ticker} Option Chain</h3>
 
       {/* Filters */}
       <CardLg className="mb-6">
-        <h4 className="text-sm font-semibold mb-4 text-slate-300">Filters</h4>
+        <h4 className="text-sm font-semibold mb-4 text-stone-700 dark:text-slate-300">Filters</h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Input
             label="Strike Filter (±$5)"
@@ -413,12 +416,12 @@ export function OptionChain({
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-4">
-          <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer select-none">
+          <label className="flex items-center gap-2 text-sm text-stone-700 dark:text-slate-300 cursor-pointer select-none">
             <input
               type="checkbox"
               checked={showStale}
               onChange={(e) => setShowStale(e.target.checked)}
-              className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-indigo-500 focus:ring-indigo-500/50"
+              className="w-4 h-4 rounded border-stone-400 dark:border-slate-600 bg-stone-100 dark:bg-slate-800 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500/50"
             />
             <span>Show stale/illiquid options</span>
           </label>
@@ -427,7 +430,7 @@ export function OptionChain({
               {hiddenCount} row{hiddenCount === 1 ? '' : 's'} hidden by quality filter
             </span>
           )}
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-stone-500 dark:text-slate-500">
             Quality filter hides rows with IV &gt; 200% or bid=0 &amp; ask&lt;$0.05.
           </span>
         </div>
@@ -435,10 +438,10 @@ export function OptionChain({
 
       {/* Results */}
       <CardLg>
-        <div className="mb-4 text-sm text-slate-400">
+        <div className="mb-4 text-sm text-stone-600 dark:text-slate-400">
           Showing {filteredData.length} of {qualityFiltered.length}
           {!showStale && hiddenCount > 0 && (
-            <span className="text-slate-500"> (after quality filter; {optionData.data.length} total)</span>
+            <span className="text-stone-500 dark:text-slate-500"> (after quality filter; {optionData.data.length} total)</span>
           )}{' '}
           contracts
         </div>
@@ -457,7 +460,7 @@ export function OptionChain({
                   <th
                     key={key}
                     onClick={() => handleSort(key)}
-                    className="cursor-pointer hover:text-slate-200 select-none"
+                    className="cursor-pointer hover:text-stone-800 hover:dark:text-slate-200 select-none"
                   >
                     {label} <SortIcon column={key} />
                   </th>
@@ -477,7 +480,7 @@ export function OptionChain({
                   <th
                     key={key}
                     onClick={() => handleSort(key)}
-                    className="cursor-pointer hover:text-slate-200 select-none"
+                    className="cursor-pointer hover:text-stone-800 hover:dark:text-slate-200 select-none"
                   >
                     {label} <SortIcon column={key} />
                   </th>
@@ -489,7 +492,7 @@ export function OptionChain({
             <tbody>
               {filteredData.length === 0 ? (
                 <tr>
-                  <td colSpan={11 + (showItmColumn ? 1 : 0) + (showBreakEvenColumn ? 1 : 0)} className="text-center text-slate-500 py-6">
+                  <td colSpan={11 + (showItmColumn ? 1 : 0) + (showBreakEvenColumn ? 1 : 0)} className="text-center text-stone-500 dark:text-slate-500 py-6">
                     No contracts match the selected filters
                   </td>
                 </tr>
@@ -519,21 +522,21 @@ export function OptionChain({
                         }
                         className={
                           showItmColumn
-                            ? 'cursor-pointer hover:bg-slate-800/40 transition-colors'
+                            ? 'cursor-pointer hover:bg-stone-100/40 hover:dark:bg-slate-800/40 transition-colors'
                             : ''
                         }
                       >
                         <td>
                           <span
                             className={`inline-block w-2.5 h-2.5 rounded-full ${
-                              liquid ? 'bg-emerald-500' : 'bg-slate-500'
+                              liquid ? 'bg-emerald-500' : 'bg-stone-400 dark:bg-slate-500'
                             }`}
                             title={liquid ? 'Liquid (OI > 50, IV < 100%)' : 'Stale or illiquid'}
                           />
                         </td>
-                        <td className="font-semibold text-slate-200">
+                        <td className="font-semibold text-stone-800 dark:text-slate-200">
                           {showItmColumn && (
-                            <span className="inline-block w-3 text-slate-500 mr-1">
+                            <span className="inline-block w-3 text-stone-500 dark:text-slate-500 mr-1">
                               {isExpanded ? '▾' : '▸'}
                             </span>
                           )}
@@ -542,16 +545,16 @@ export function OptionChain({
                         <td className="font-mono">
                           {noQuote ? '—' : formatCurrency(opt.mark, 2)}
                         </td>
-                        <td className="font-mono text-emerald-400">
+                        <td className="font-mono text-emerald-700 dark:text-emerald-400">
                           {noQuote ? '—' : formatCurrency(opt.bid, 2)}
                         </td>
-                        <td className="font-mono text-red-400">
+                        <td className="font-mono text-red-700 dark:text-red-400">
                           {noQuote ? '—' : formatCurrency(opt.ask, 2)}
                         </td>
                         {showBreakEvenColumn && (() => {
                           const be = breakEvenFor(opt.strike, opt.mark, optionType);
                           if (be == null || noQuote) {
-                            return <td className="text-slate-500">—</td>;
+                            return <td className="text-stone-500 dark:text-slate-500">—</td>;
                           }
                           const pct = ((be - quoteClose) / quoteClose) * 100;
                           // For a long buyer to reach BE, the underlying
@@ -564,13 +567,13 @@ export function OptionChain({
                             optionType === 'call' ? pct : -pct;
                           const alreadyPast = directional <= 0;
                           const colorClass = alreadyPast
-                            ? 'text-emerald-400'
-                            : 'text-amber-400';
+                            ? 'text-emerald-700 dark:text-emerald-400'
+                            : 'text-amber-700 dark:text-amber-400';
                           const arrow =
                             optionType === 'call' ? '▲' : '▼';
                           return (
                             <td className="font-mono">
-                              <span className="text-slate-200">
+                              <span className="text-stone-800 dark:text-slate-200">
                                 {formatCurrency(be, 2)}
                               </span>
                               <span className={`ml-2 text-xs ${colorClass}`}>
@@ -588,10 +591,10 @@ export function OptionChain({
                             ? formatPercent(ivPct, 0)
                             : formatPercent(ivPct, 1)}
                         </td>
-                        <td className="text-blue-400">{formatGreek(opt.delta, 'delta')}</td>
-                        <td className="text-purple-400">{formatGreek(opt.gamma, 'gamma')}</td>
-                        <td className="text-amber-400">{formatGreek(opt.theta, 'theta')}</td>
-                        <td className="text-emerald-400">{formatGreek(opt.vega, 'vega')}</td>
+                        <td className="text-blue-700 dark:text-blue-400">{formatGreek(opt.delta, 'delta')}</td>
+                        <td className="text-purple-700 dark:text-purple-400">{formatGreek(opt.gamma, 'gamma')}</td>
+                        <td className="text-amber-700 dark:text-amber-400">{formatGreek(opt.theta, 'theta')}</td>
+                        <td className="text-emerald-700 dark:text-emerald-400">{formatGreek(opt.vega, 'vega')}</td>
                         <td>
                           {opt.open_interest != null
                             ? Number(opt.open_interest).toLocaleString()
@@ -599,18 +602,18 @@ export function OptionChain({
                         </td>
                         {showItmColumn && (
                           <td className="font-mono">
-                            <span className={itmCount > 0 ? 'text-emerald-400' : 'text-slate-500'}>
+                            <span className={itmCount > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-stone-500 dark:text-slate-500'}>
                               {itmCount}
                             </span>
-                            <span className="text-slate-600"> / {totalDays}</span>
-                            <span className="text-slate-500 ml-1">
+                            <span className="text-stone-400 dark:text-slate-600"> / {totalDays}</span>
+                            <span className="text-stone-500 dark:text-slate-500 ml-1">
                               ({formatPercent(itmPct, 0)})
                             </span>
                           </td>
                         )}
                       </tr>
                       {showItmColumn && isExpanded && (
-                        <tr className="bg-slate-900/40">
+                        <tr className="bg-white/40 dark:bg-slate-900/40">
                           <td colSpan={11 + (showItmColumn ? 1 : 0) + (showBreakEvenColumn ? 1 : 0)} className="p-4">
                             <ItmSparkline
                               ticker={ticker}
@@ -634,21 +637,21 @@ export function OptionChain({
         </div>
 
         {/* Legend */}
-        <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-slate-500 bg-slate-800/40 p-4 rounded-lg">
+        <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-stone-500 dark:text-slate-500 bg-stone-100/40 dark:bg-slate-800/40 p-4 rounded-lg">
           <div>
-            <strong className="text-slate-400">Quality:</strong>{' '}
+            <strong className="text-stone-600 dark:text-slate-400">Quality:</strong>{' '}
             <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 align-middle mr-1" />
             liquid /{' '}
-            <span className="inline-block w-2 h-2 rounded-full bg-slate-500 align-middle mx-1" />
+            <span className="inline-block w-2 h-2 rounded-full bg-stone-400 dark:bg-slate-500 align-middle mx-1" />
             stale
           </div>
-          <div><strong className="text-slate-400">Mark:</strong> Bid/ask mid-point</div>
-          <div><strong className="text-slate-400">IV:</strong> Implied volatility</div>
-          <div><strong className="text-slate-400">Delta:</strong> Price sensitivity</div>
-          <div><strong className="text-slate-400">Gamma:</strong> Delta change rate</div>
-          <div><strong className="text-slate-400">Theta:</strong> Daily time decay</div>
-          <div><strong className="text-slate-400">Vega:</strong> Volatility sensitivity</div>
-          <div><strong className="text-slate-400">OI:</strong> Open interest</div>
+          <div><strong className="text-stone-600 dark:text-slate-400">Mark:</strong> Bid/ask mid-point</div>
+          <div><strong className="text-stone-600 dark:text-slate-400">IV:</strong> Implied volatility</div>
+          <div><strong className="text-stone-600 dark:text-slate-400">Delta:</strong> Price sensitivity</div>
+          <div><strong className="text-stone-600 dark:text-slate-400">Gamma:</strong> Delta change rate</div>
+          <div><strong className="text-stone-600 dark:text-slate-400">Theta:</strong> Daily time decay</div>
+          <div><strong className="text-stone-600 dark:text-slate-400">Vega:</strong> Volatility sensitivity</div>
+          <div><strong className="text-stone-600 dark:text-slate-400">OI:</strong> Open interest</div>
         </div>
       </CardLg>
     </div>

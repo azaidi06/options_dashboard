@@ -12,12 +12,7 @@ import {
 } from 'recharts';
 import { CardLg, MetricCard } from '../common/Card';
 import { formatCurrency, formatPercent } from '../../utils/formatters';
-
-const TOOLTIP_STYLE = {
-  backgroundColor: 'rgba(15, 23, 42, 0.95)',
-  border: '1px solid #334155',
-  borderRadius: '8px',
-};
+import { useTheme } from '../../theme/ThemeContext';
 
 /**
  * Compute period max-drawdown from a daily price series.
@@ -40,11 +35,17 @@ function computePeriodMDD(rows) {
 }
 
 export function DrawdownChart({ ticker, drawdown, priceData = null }) {
+  const t = useTheme().tokens;
+  const TOOLTIP_STYLE = {
+    backgroundColor: t.tooltipBg,
+    border: `1px solid ${t.tooltipBorder}`,
+    borderRadius: '8px',
+  };
   if (drawdown.loading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="spinner-lg" />
-        <span className="ml-3 text-slate-400 text-sm">Loading drawdown data...</span>
+        <span className="ml-3 text-stone-600 dark:text-slate-400 text-sm">Loading drawdown data...</span>
       </div>
     );
   }
@@ -52,13 +53,13 @@ export function DrawdownChart({ ticker, drawdown, priceData = null }) {
   if (drawdown.error) {
     return (
       <div className="error-box">
-        <p className="text-slate-300">Error loading drawdown data: {drawdown.error}</p>
+        <p className="text-stone-700 dark:text-slate-300">Error loading drawdown data: {drawdown.error}</p>
       </div>
     );
   }
 
   if (!drawdown.data) {
-    return <div className="text-slate-500 text-center py-8">No drawdown data available</div>;
+    return <div className="text-stone-500 dark:text-slate-500 text-center py-8">No drawdown data available</div>;
   }
 
   const { underwater_data, events, summary } = drawdown.data;
@@ -72,7 +73,7 @@ export function DrawdownChart({ ticker, drawdown, priceData = null }) {
 
   return (
     <div>
-      <h3 className="text-base font-semibold mb-4 text-slate-200">{ticker} Drawdown Analysis</h3>
+      <h3 className="text-base font-semibold mb-4 text-stone-800 dark:text-slate-200">{ticker} Drawdown Analysis</h3>
 
       {/* Summary metrics */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
@@ -97,23 +98,23 @@ export function DrawdownChart({ ticker, drawdown, priceData = null }) {
 
       {/* Underwater chart */}
       <CardLg className="mb-6">
-        <h4 className="text-sm font-semibold mb-1 text-slate-300">Underwater Periods</h4>
-        <p className="text-xs text-slate-500 mb-4">
+        <h4 className="text-sm font-semibold mb-1 text-stone-700 dark:text-slate-300">Underwater Periods</h4>
+        <p className="text-xs text-stone-500 dark:text-slate-500 mb-4">
           Distance below all-time high during the period.
         </p>
         <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-            <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} stroke="#334155" />
+            <CartesianGrid strokeDasharray="3 3" stroke={t.surfaceElev} />
+            <XAxis dataKey="date" tick={{ fontSize: 11, fill: t.textMute }} stroke={t.border} />
             <YAxis
-              tick={{ fontSize: 11, fill: '#94a3b8' }}
-              stroke="#334155"
+              tick={{ fontSize: 11, fill: t.textMute }}
+              stroke={t.border}
               tickFormatter={(v) => `${(v * 100).toFixed(0)}%`}
               domain={['auto', 0]}
             />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
-              labelStyle={{ color: '#e2e8f0' }}
+              labelStyle={{ color: t.text }}
               formatter={(value) => [formatPercent(value * 100, 2), 'Drawdown']}
               labelFormatter={(label) => `Date: ${label}`}
             />
@@ -121,7 +122,7 @@ export function DrawdownChart({ ticker, drawdown, priceData = null }) {
               type="monotone"
               dataKey="drawdown_pct"
               fill="rgba(239, 68, 68, 0.15)"
-              stroke="#ef4444"
+              stroke={t.negative}
               name="Drawdown from ATH"
               isAnimationActive={false}
             />
@@ -131,9 +132,9 @@ export function DrawdownChart({ ticker, drawdown, priceData = null }) {
 
       {/* Events table */}
       <CardLg>
-        <h4 className="text-sm font-semibold mb-4 text-slate-300">Drawdown Events</h4>
+        <h4 className="text-sm font-semibold mb-4 text-stone-700 dark:text-slate-300">Drawdown Events</h4>
         {events.length === 0 ? (
-          <p className="text-slate-500 text-center py-8">No significant drawdown events found</p>
+          <p className="text-stone-500 dark:text-slate-500 text-center py-8">No significant drawdown events found</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="data-table">
@@ -156,14 +157,14 @@ export function DrawdownChart({ ticker, drawdown, priceData = null }) {
                     <td className="font-mono tabular-nums">{formatCurrency(event.peak_price, 2)}</td>
                     <td>{event.trough_date}</td>
                     <td className="font-mono tabular-nums">{formatCurrency(event.trough_price, 2)}</td>
-                    <td className="font-semibold text-red-400 tabular-nums">
+                    <td className="font-semibold text-red-700 dark:text-red-400 tabular-nums">
                       {formatPercent(event.drawdown_pct * 100, 1)}
                     </td>
                     <td className="tabular-nums">{event.days_to_trough}</td>
                     <td className="tabular-nums">
                       {event.days_to_recovery ? event.days_to_recovery : '—'}
                     </td>
-                    <td>{event.recovery_date || <span className="text-slate-500">Not recovered</span>}</td>
+                    <td>{event.recovery_date || <span className="text-stone-500 dark:text-slate-500">Not recovered</span>}</td>
                   </tr>
                 ))}
               </tbody>

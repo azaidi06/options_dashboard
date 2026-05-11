@@ -18,24 +18,18 @@ import { Input } from '../common/Input';
 import { CardLg, MetricCard } from '../common/Card';
 import { calculatePayoff } from '../../utils/calculations';
 import { formatCurrency } from '../../utils/formatters';
-
-const TOOLTIP_STYLE = {
-  backgroundColor: 'rgba(15, 23, 42, 0.95)',
-  border: '1px solid #334155',
-  borderRadius: '8px',
-  backdropFilter: 'blur(8px)',
-};
+import { useTheme } from '../../theme/ThemeContext';
 
 function PayoffTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
   const row = payload.find((p) => p.dataKey === 'pl_per_share') || payload[0];
   if (!row) return null;
   return (
-    <div className="bg-slate-900/95 backdrop-blur border border-slate-700 rounded-lg shadow-xl px-3 py-2 text-xs">
-      <div className="font-semibold text-slate-100 mb-1 tabular-nums">
+    <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur border border-stone-300 dark:border-slate-700 rounded-lg shadow-xl px-3 py-2 text-xs">
+      <div className="font-semibold text-stone-900 dark:text-slate-100 mb-1 tabular-nums">
         Stock @ {formatCurrency(parseFloat(label), 2)}
       </div>
-      <div className="text-slate-300 tabular-nums">
+      <div className="text-stone-700 dark:text-slate-300 tabular-nums">
         P/L: {formatCurrency(row.value, 2)}
       </div>
     </div>
@@ -75,6 +69,13 @@ function pickATMContract(chainRows) {
 }
 
 export function PayoffDiagram({ chainData = null, optionType = 'put' }) {
+  const t = useTheme().tokens;
+  const TOOLTIP_STYLE = {
+    backgroundColor: t.tooltipBg,
+    border: `1px solid ${t.tooltipBorder}`,
+    borderRadius: '8px',
+    backdropFilter: 'blur(8px)',
+  };
   const isCall = String(optionType).toLowerCase() === 'call';
   const positionLabel = isCall ? 'Long Call' : 'Long Put';
   const [strike, setStrike] = useState(100);
@@ -134,11 +135,11 @@ export function PayoffDiagram({ chainData = null, optionType = 'put' }) {
 
   return (
     <div>
-      <h3 className="text-base font-semibold mb-4 text-slate-200">{positionLabel} Payoff Diagram</h3>
+      <h3 className="text-base font-semibold mb-4 text-stone-800 dark:text-slate-200">{positionLabel} Payoff Diagram</h3>
 
       {/* Inputs */}
       <CardLg className="mb-6">
-        <h4 className="text-sm font-semibold mb-4 text-slate-300">Configure Position</h4>
+        <h4 className="text-sm font-semibold mb-4 text-stone-700 dark:text-slate-300">Configure Position</h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Input label="Strike Price" value={strike} onChange={(v) => setStrike(parseFloat(v) || 0)} type="number" step="0.50" />
           <Input label="Premium Paid" value={premium} onChange={(v) => setPremium(parseFloat(v) || 0)} type="number" step="0.10" />
@@ -146,7 +147,7 @@ export function PayoffDiagram({ chainData = null, optionType = 'put' }) {
           <Input label="Max Stock Price" value={maxPrice} onChange={(v) => setMaxPrice(parseFloat(v) || 0)} type="number" step="1" />
         </div>
         {chainData?.data?.length ? (
-          <p className="mt-3 text-xs text-slate-500">
+          <p className="mt-3 text-xs text-stone-500 dark:text-slate-500">
             Defaults seeded from the loaded option chain (ATM strike, bid/ask mid).
           </p>
         ) : null}
@@ -164,59 +165,59 @@ export function PayoffDiagram({ chainData = null, optionType = 'put' }) {
       <CardLg className="mb-6">
         <ResponsiveContainer width="100%" height={280}>
           <ComposedChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+            <CartesianGrid strokeDasharray="3 3" stroke={t.surfaceElev} />
             <XAxis
               dataKey="price"
-              label={{ value: 'Stock Price at Expiration', position: 'insideBottomRight', offset: -5, fill: '#94a3b8', fontSize: 11 }}
-              tick={{ fontSize: 11, fill: '#94a3b8' }}
-              stroke="#334155"
+              label={{ value: 'Stock Price at Expiration', position: 'insideBottomRight', offset: -5, fill: t.textMute, fontSize: 11 }}
+              tick={{ fontSize: 11, fill: t.textMute }}
+              stroke={t.border}
               tickFormatter={(v) => `$${Number(v).toFixed(0)}`}
             />
             <YAxis
-              label={{ value: 'P/L ($)', angle: -90, position: 'insideLeft', fill: '#94a3b8', fontSize: 11 }}
-              tick={{ fontSize: 11, fill: '#94a3b8' }}
-              stroke="#334155"
+              label={{ value: 'P/L ($)', angle: -90, position: 'insideLeft', fill: t.textMute, fontSize: 11 }}
+              tick={{ fontSize: 11, fill: t.textMute }}
+              stroke={t.border}
               tickFormatter={(v) => `$${Number(v).toFixed(0)}`}
             />
             <Tooltip content={<PayoffTooltip />} contentStyle={TOOLTIP_STYLE} />
 
-            <ReferenceLine y={0} stroke="#475569" strokeWidth={1.5} />
+            <ReferenceLine y={0} stroke={t.axis} strokeWidth={1.5} />
             <ReferenceLine
               x={breakeven}
-              stroke="#f59e0b"
+              stroke={t.warning}
               strokeDasharray="5 5"
-              label={{ value: `BE: $${breakeven.toFixed(0)}`, position: 'top', fill: '#f59e0b', fontSize: 11 }}
+              label={{ value: `BE: $${breakeven.toFixed(0)}`, position: 'top', fill: t.warning, fontSize: 11 }}
             />
             <ReferenceLine
               x={strike}
-              stroke="#818cf8"
+              stroke={t.indigo}
               strokeDasharray="5 5"
-              label={{ value: `Strike: $${strike.toFixed(0)}`, position: 'top', fill: '#818cf8', fontSize: 11 }}
+              label={{ value: `Strike: $${strike.toFixed(0)}`, position: 'top', fill: t.indigo, fontSize: 11 }}
             />
 
             <Area type="monotone" dataKey="profit" fill="rgba(16, 185, 129, 0.15)" stroke="none" isAnimationActive={false} legendType="none" />
             <Area type="monotone" dataKey="loss" fill="rgba(239, 68, 68, 0.15)" stroke="none" isAnimationActive={false} legendType="none" />
-            <Area type="monotone" dataKey="pl_per_share" fill="none" stroke="#e2e8f0" strokeWidth={2} dot={false} isAnimationActive={false} name="P/L per Share" />
+            <Area type="monotone" dataKey="pl_per_share" fill="none" stroke={t.text} strokeWidth={2} dot={false} isAnimationActive={false} name="P/L per Share" />
           </ComposedChart>
         </ResponsiveContainer>
       </CardLg>
 
       {/* Explanation */}
       <div className="info-box">
-        <h4 className="text-sm font-semibold mb-3 text-slate-100">{positionLabel} Payoff Structure</h4>
+        <h4 className="text-sm font-semibold mb-3 text-stone-900 dark:text-slate-100">{positionLabel} Payoff Structure</h4>
         {isCall ? (
-          <div className="space-y-2 text-sm text-slate-300">
-            <p><strong className="text-slate-100">Profit Zone:</strong> When stock rises above breakeven ({formatCurrency(breakeven, 2)}), you profit.</p>
-            <p><strong className="text-slate-100">Max Profit:</strong> Unlimited (no cap as stock keeps rising)</p>
-            <p><strong className="text-slate-100">Max Loss:</strong> {formatCurrency(premium, 2)} per share (premium paid, stock stays below {formatCurrency(strike, 2)})</p>
-            <p><strong className="text-slate-100">Breakeven:</strong> {formatCurrency(breakeven, 2)} (strike plus premium)</p>
+          <div className="space-y-2 text-sm text-stone-700 dark:text-slate-300">
+            <p><strong className="text-stone-900 dark:text-slate-100">Profit Zone:</strong> When stock rises above breakeven ({formatCurrency(breakeven, 2)}), you profit.</p>
+            <p><strong className="text-stone-900 dark:text-slate-100">Max Profit:</strong> Unlimited (no cap as stock keeps rising)</p>
+            <p><strong className="text-stone-900 dark:text-slate-100">Max Loss:</strong> {formatCurrency(premium, 2)} per share (premium paid, stock stays below {formatCurrency(strike, 2)})</p>
+            <p><strong className="text-stone-900 dark:text-slate-100">Breakeven:</strong> {formatCurrency(breakeven, 2)} (strike plus premium)</p>
           </div>
         ) : (
-          <div className="space-y-2 text-sm text-slate-300">
-            <p><strong className="text-slate-100">Profit Zone:</strong> When stock falls below breakeven ({formatCurrency(breakeven, 2)}), you profit.</p>
-            <p><strong className="text-slate-100">Max Profit:</strong> {formatCurrency(strike - premium, 2)} per share (stock goes to $0)</p>
-            <p><strong className="text-slate-100">Max Loss:</strong> {formatCurrency(premium, 2)} per share (premium paid, stock stays above {formatCurrency(strike, 2)})</p>
-            <p><strong className="text-slate-100">Breakeven:</strong> {formatCurrency(breakeven, 2)} (strike minus premium)</p>
+          <div className="space-y-2 text-sm text-stone-700 dark:text-slate-300">
+            <p><strong className="text-stone-900 dark:text-slate-100">Profit Zone:</strong> When stock falls below breakeven ({formatCurrency(breakeven, 2)}), you profit.</p>
+            <p><strong className="text-stone-900 dark:text-slate-100">Max Profit:</strong> {formatCurrency(strike - premium, 2)} per share (stock goes to $0)</p>
+            <p><strong className="text-stone-900 dark:text-slate-100">Max Loss:</strong> {formatCurrency(premium, 2)} per share (premium paid, stock stays above {formatCurrency(strike, 2)})</p>
+            <p><strong className="text-stone-900 dark:text-slate-100">Breakeven:</strong> {formatCurrency(breakeven, 2)} (strike minus premium)</p>
           </div>
         )}
       </div>

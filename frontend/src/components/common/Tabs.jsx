@@ -12,7 +12,7 @@ export function Tabs({ children, defaultTab = 0 }) {
       {/* Tab bar - pill style */}
       <div
         role="tablist"
-        className="flex gap-1 p-1 bg-slate-900/60 border border-slate-800 rounded-xl mb-6 overflow-x-auto"
+        className="flex gap-1 p-1 bg-white/60 dark:bg-slate-900/60 border border-stone-200 dark:border-slate-800 rounded-xl mb-6 overflow-x-auto"
       >
         {tabs.map((tab, i) => {
           const active = i === activeTab;

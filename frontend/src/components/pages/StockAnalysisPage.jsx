@@ -218,9 +218,9 @@ export function StockAnalysisPage() {
           <CardLg>
             <div className="flex items-center justify-center py-16">
               <div className="text-center max-w-md">
-                <FileSearch className="w-12 h-12 text-slate-600 mx-auto mb-4" strokeWidth={1.5} />
-                <p className="text-slate-300 font-semibold mb-1">No data loaded yet</p>
-                <p className="text-slate-500 text-sm">
+                <FileSearch className="w-12 h-12 text-stone-400 dark:text-slate-600 mx-auto mb-4" strokeWidth={1.5} />
+                <p className="text-stone-700 dark:text-slate-300 font-semibold mb-1">No data loaded yet</p>
+                <p className="text-stone-500 dark:text-slate-500 text-sm">
                   Enter a ticker and click <strong>Load Data</strong> to begin analysis.
                 </p>
               </div>

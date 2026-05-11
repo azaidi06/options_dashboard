@@ -5,6 +5,7 @@ import { useState, useMemo } from 'react';
 import { Tabs, Tab } from '../common/Tabs';
 import { Input } from '../common/Input';
 import { CardLg, MetricCard } from '../common/Card';
+import { useTheme } from '../../theme/ThemeContext';
 import {
   calculateTimeDecay,
   calculatePriceChangeImpact,
@@ -22,16 +23,16 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-const TOOLTIP_STYLE = {
-  backgroundColor: 'rgba(15, 23, 42, 0.95)',
-  border: '1px solid #334155',
-  borderRadius: '8px',
-};
-const GRID_COLOR = '#1e293b';
-const AXIS_TICK = { fontSize: 11, fill: '#94a3b8' };
-const AXIS_STROKE = '#334155';
-
 export function CalculatorPanel({ optionType = 'put' }) {
+  const t = useTheme().tokens;
+  const TOOLTIP_STYLE = {
+    backgroundColor: t.tooltipBg,
+    border: `1px solid ${t.tooltipBorder}`,
+    borderRadius: '8px',
+  };
+  const GRID_COLOR = t.surfaceElev;
+  const AXIS_TICK = { fontSize: 11, fill: t.textMute };
+  const AXIS_STROKE = t.border;
   const isCall = String(optionType).toLowerCase() === 'call';
   const optLabel = isCall ? 'call' : 'put';
   const optLabelTitle = isCall ? 'Call' : 'Put';
@@ -60,13 +61,13 @@ export function CalculatorPanel({ optionType = 'put' }) {
 
   return (
     <div>
-      <h3 className="text-base font-semibold mb-4 text-slate-200">Risk Calculators</h3>
+      <h3 className="text-base font-semibold mb-4 text-stone-800 dark:text-slate-200">Risk Calculators</h3>
 
       <Tabs defaultTab={0}>
         {/* Time Decay */}
         <Tab label="Time Decay">
           <CardLg>
-            <h4 className="text-sm font-semibold mb-4 text-slate-300">Premium Decay Over Time</h4>
+            <h4 className="text-sm font-semibold mb-4 text-stone-700 dark:text-slate-300">Premium Decay Over Time</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <Input label="Initial Premium" value={tdPremium} onChange={(v) => setTdPremium(parseFloat(v) || 0)} type="number" step="0.10" />
               <Input label="Daily Theta" value={tdTheta} onChange={(v) => setTdTheta(parseFloat(v) || 0)} type="number" step="0.01" />
@@ -76,22 +77,22 @@ export function CalculatorPanel({ optionType = 'put' }) {
             <ResponsiveContainer width="100%" height={250}>
               <LineChart data={timeDecay.data}>
                 <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
-                <XAxis dataKey="days_remaining" tick={AXIS_TICK} stroke={AXIS_STROKE} label={{ value: 'Days Remaining', position: 'insideBottomRight', offset: -5, fill: '#94a3b8', fontSize: 11 }} />
-                <YAxis tick={AXIS_TICK} stroke={AXIS_STROKE} label={{ value: 'Premium ($)', angle: -90, position: 'insideLeft', fill: '#94a3b8', fontSize: 11 }} />
-                <Tooltip contentStyle={TOOLTIP_STYLE} labelStyle={{ color: '#e2e8f0' }} formatter={(v) => `$${v.toFixed(2)}`} />
-                <Legend wrapperStyle={{ color: '#94a3b8' }} />
-                <Line type="monotone" dataKey="premium" stroke="#f59e0b" name="Projected Premium" isAnimationActive={false} strokeWidth={2} />
+                <XAxis dataKey="days_remaining" tick={AXIS_TICK} stroke={AXIS_STROKE} label={{ value: 'Days Remaining', position: 'insideBottomRight', offset: -5, fill: t.textMute, fontSize: 11 }} />
+                <YAxis tick={AXIS_TICK} stroke={AXIS_STROKE} label={{ value: 'Premium ($)', angle: -90, position: 'insideLeft', fill: t.textMute, fontSize: 11 }} />
+                <Tooltip contentStyle={TOOLTIP_STYLE} labelStyle={{ color: t.text }} formatter={(v) => `$${v.toFixed(2)}`} />
+                <Legend wrapperStyle={{ color: t.textMute }} />
+                <Line type="monotone" dataKey="premium" stroke={t.warning} name="Projected Premium" isAnimationActive={false} strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
 
-            <p className="text-xs text-slate-500 italic mt-3">
+            <p className="text-xs text-stone-500 dark:text-slate-500 italic mt-3">
               *Linear approximation; real theta accelerates near expiry per Black-Scholes.
-              See <a href="/learn#greeks" className="text-indigo-400 hover:text-indigo-300 underline">Learn → Greeks</a> for details.
+              See <a href="/learn#greeks" className="text-indigo-700 dark:text-indigo-400 hover:text-indigo-700 hover:dark:text-indigo-300 underline">Learn → Greeks</a> for details.
             </p>
 
             <div className="warning-box mt-4">
-              <p className="text-sm text-slate-300">
-                <strong className="text-slate-100">Theta Effect:</strong> As expiration approaches, time
+              <p className="text-sm text-stone-700 dark:text-slate-300">
+                <strong className="text-stone-900 dark:text-slate-100">Theta Effect:</strong> As expiration approaches, time
                 decay accelerates. Daily theta decay of ${Math.abs(tdTheta).toFixed(3)}.
               </p>
             </div>
@@ -101,7 +102,7 @@ export function CalculatorPanel({ optionType = 'put' }) {
         {/* Price Impact */}
         <Tab label="Price Impact">
           <CardLg>
-            <h4 className="text-sm font-semibold mb-4 text-slate-300">Delta-Gamma Impact</h4>
+            <h4 className="text-sm font-semibold mb-4 text-stone-700 dark:text-slate-300">Delta-Gamma Impact</h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <Input label="Current Premium" value={piPremium} onChange={(v) => setPiPremium(parseFloat(v) || 0)} type="number" step="0.10" />
               <Input label="Delta" value={piDelta} onChange={(v) => setPiDelta(parseFloat(v) || 0)} type="number" step="0.01" />
@@ -120,10 +121,10 @@ export function CalculatorPanel({ optionType = 'put' }) {
             </div>
 
             <div className="info-box">
-              <p className="text-sm text-slate-300">
-                <strong className="text-slate-100">Delta Effect:</strong> ${priceImpact.delta_effect.toFixed(3)}
-                <br /><strong className="text-slate-100">Gamma Effect:</strong> ${priceImpact.gamma_effect.toFixed(3)}
-                <br /><strong className="text-slate-100">What it means:</strong> Shows how {optLabel} value changes when
+              <p className="text-sm text-stone-700 dark:text-slate-300">
+                <strong className="text-stone-900 dark:text-slate-100">Delta Effect:</strong> ${priceImpact.delta_effect.toFixed(3)}
+                <br /><strong className="text-stone-900 dark:text-slate-100">Gamma Effect:</strong> ${priceImpact.gamma_effect.toFixed(3)}
+                <br /><strong className="text-stone-900 dark:text-slate-100">What it means:</strong> Shows how {optLabel} value changes when
                 stock price moves, accounting for both delta and gamma.
               </p>
             </div>
@@ -133,21 +134,21 @@ export function CalculatorPanel({ optionType = 'put' }) {
         {/* Moneyness */}
         <Tab label="Moneyness">
           <CardLg>
-            <h4 className="text-sm font-semibold mb-4 text-slate-300">Option Moneyness</h4>
+            <h4 className="text-sm font-semibold mb-4 text-stone-700 dark:text-slate-300">Option Moneyness</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <Input label="Strike Price" value={mnStrike} onChange={(v) => setMnStrike(parseFloat(v) || 0)} type="number" step="0.50" />
               <Input label="Current Stock Price" value={mnPrice} onChange={(v) => setMnPrice(parseFloat(v) || 0)} type="number" step="0.50" />
             </div>
 
             <div className="text-center mb-6">
-              <div className="text-sm text-slate-400 mb-2">Classification</div>
+              <div className="text-sm text-stone-600 dark:text-slate-400 mb-2">Classification</div>
               <div className={`text-3xl font-bold ${
-                moneyness.classification === 'ITM' ? 'text-emerald-400' :
-                moneyness.classification === 'ATM' ? 'text-amber-400' : 'text-red-400'
+                moneyness.classification === 'ITM' ? 'text-emerald-700 dark:text-emerald-400' :
+                moneyness.classification === 'ATM' ? 'text-amber-700 dark:text-amber-400' : 'text-red-700 dark:text-red-400'
               }`}>
                 {moneyness.classification}
               </div>
-              <div className="text-sm text-slate-400 mt-2">
+              <div className="text-sm text-stone-600 dark:text-slate-400 mt-2">
                 Difference: {(moneyness.pct_diff * 100).toFixed(2)}%
               </div>
             </div>
@@ -160,15 +161,15 @@ export function CalculatorPanel({ optionType = 'put' }) {
 
             <div className="info-box">
               {isCall ? (
-                <p className="text-sm text-slate-300">
-                  <strong className="text-slate-100">For Call Options:</strong><br />
+                <p className="text-sm text-stone-700 dark:text-slate-300">
+                  <strong className="text-stone-900 dark:text-slate-100">For Call Options:</strong><br />
                   <strong>ITM:</strong> Strike &lt; Stock Price (intrinsic value)<br />
                   <strong>ATM:</strong> Strike ≈ Stock Price (sensitive to moves)<br />
                   <strong>OTM:</strong> Strike &gt; Stock Price (time value only)
                 </p>
               ) : (
-                <p className="text-sm text-slate-300">
-                  <strong className="text-slate-100">For Put Options:</strong><br />
+                <p className="text-sm text-stone-700 dark:text-slate-300">
+                  <strong className="text-stone-900 dark:text-slate-100">For Put Options:</strong><br />
                   <strong>ITM:</strong> Strike &gt; Stock Price (intrinsic value)<br />
                   <strong>ATM:</strong> Strike ≈ Stock Price (sensitive to moves)<br />
                   <strong>OTM:</strong> Strike &lt; Stock Price (time value only)
@@ -181,7 +182,7 @@ export function CalculatorPanel({ optionType = 'put' }) {
         {/* Position Size */}
         <Tab label="Position Size">
           <CardLg>
-            <h4 className="text-sm font-semibold mb-4 text-slate-300">Risk-Based Position Sizing</h4>
+            <h4 className="text-sm font-semibold mb-4 text-stone-700 dark:text-slate-300">Risk-Based Position Sizing</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <Input label="Account Value ($)" value={psAccount} onChange={(v) => setPsAccount(parseFloat(v) || 0)} type="number" step="1000" />
               <Input label="Risk per Trade (%)" value={psRisk} onChange={(v) => setPsRisk(parseFloat(v) || 0)} type="number" step="0.5" max="10" />
@@ -195,8 +196,8 @@ export function CalculatorPanel({ optionType = 'put' }) {
             </div>
 
             <div className="info-box">
-              <p className="text-sm text-slate-300">
-                <strong className="text-slate-100">Position Sizing Rule:</strong> Risk no more than {psRisk}% per trade.
+              <p className="text-sm text-stone-700 dark:text-slate-300">
+                <strong className="text-stone-900 dark:text-slate-100">Position Sizing Rule:</strong> Risk no more than {psRisk}% per trade.
                 With ${psAccount.toLocaleString()} and {psRisk}% risk: max {positionSize.max_contracts_floored} contracts
                 at ${psPremium.toFixed(2)} each.
               </p>

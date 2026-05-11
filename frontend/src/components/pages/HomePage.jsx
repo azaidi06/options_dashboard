@@ -28,7 +28,7 @@ export function HomePage() {
         {/* ─── Hero ─── */}
         <div className="mb-8">
           <h1 className="text-4xl font-extrabold mb-3 gradient-text">Options Dashboard</h1>
-          <p className="text-lg text-slate-400 max-w-3xl">
+          <p className="text-lg text-stone-600 dark:text-slate-400 max-w-3xl">
             Analyze stocks, study drawdowns, and explore historical option chains with real market data.
           </p>
         </div>
@@ -36,34 +36,34 @@ export function HomePage() {
         {/* ─── Navigation Cards ─── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <Link to="/stock" className="group">
-            <div className="card-lg h-full border-slate-800 hover:border-indigo-500/30 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-indigo-500/5">
+            <div className="card-lg h-full border-stone-200 dark:border-slate-800 hover:border-indigo-500/30 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-indigo-500/5">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-lg bg-indigo-600/15 flex items-center justify-center">
-                  <LineChart className="w-5 h-5 text-indigo-400" />
+                  <LineChart className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
                 </div>
-                <h2 className="text-xl font-bold text-slate-100 group-hover:text-indigo-400 transition-colors">
+                <h2 className="text-xl font-bold text-stone-900 dark:text-slate-100 group-hover:text-indigo-700 group-hover:dark:text-indigo-400 transition-colors">
                   Stock Analysis
                 </h2>
-                <ArrowRight className="w-4 h-4 ml-auto text-slate-600 group-hover:text-indigo-400 transition-colors" />
+                <ArrowRight className="w-4 h-4 ml-auto text-stone-400 dark:text-slate-600 group-hover:text-indigo-700 group-hover:dark:text-indigo-400 transition-colors" />
               </div>
-              <p className="text-slate-400 mb-3 text-sm leading-relaxed">
+              <p className="text-stone-600 dark:text-slate-400 mb-3 text-sm leading-relaxed">
                 Price charts with rolling-high gradients, drawdown analysis, technical indicators, and entry-window opportunities.
               </p>
             </div>
           </Link>
 
           <Link to="/options" className="group">
-            <div className="card-lg h-full border-slate-800 hover:border-purple-500/30 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-500/5">
+            <div className="card-lg h-full border-stone-200 dark:border-slate-800 hover:border-purple-500/30 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-500/5">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-lg bg-purple-600/15 flex items-center justify-center">
-                  <BarChart3 className="w-5 h-5 text-purple-400" />
+                  <BarChart3 className="w-5 h-5 text-purple-700 dark:text-purple-400" />
                 </div>
-                <h2 className="text-xl font-bold text-slate-100 group-hover:text-purple-400 transition-colors">
+                <h2 className="text-xl font-bold text-stone-900 dark:text-slate-100 group-hover:text-purple-700 group-hover:dark:text-purple-400 transition-colors">
                   Options
                 </h2>
-                <ArrowRight className="w-4 h-4 ml-auto text-slate-600 group-hover:text-purple-400 transition-colors" />
+                <ArrowRight className="w-4 h-4 ml-auto text-stone-400 dark:text-slate-600 group-hover:text-purple-700 group-hover:dark:text-purple-400 transition-colors" />
               </div>
-              <p className="text-slate-400 mb-3 text-sm leading-relaxed">
+              <p className="text-stone-600 dark:text-slate-400 mb-3 text-sm leading-relaxed">
                 Historical option chains (calls &amp; puts), IV smiles, payoff diagrams, calculators, and a Greeks reference.
               </p>
             </div>
@@ -72,7 +72,7 @@ export function HomePage() {
 
         {/* ─── Recently Viewed ─── */}
         <div className="mb-8">
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+          <p className="text-xs font-semibold text-stone-600 dark:text-slate-400 uppercase tracking-wider mb-3">
             Recently Viewed
           </p>
           {recent.length > 0 ? (
@@ -81,8 +81,8 @@ export function HomePage() {
                 <Link
                   key={t}
                   to={`/stock?ticker=${encodeURIComponent(t)}`}
-                  className="px-3 py-1.5 text-sm bg-slate-900/60 border border-slate-800 rounded-lg
-                             text-slate-300 hover:border-indigo-500/30 hover:text-indigo-400
+                  className="px-3 py-1.5 text-sm bg-white/60 dark:bg-slate-900/60 border border-stone-200 dark:border-slate-800 rounded-lg
+                             text-stone-700 dark:text-slate-300 hover:border-indigo-500/30 hover:text-indigo-700 hover:dark:text-indigo-400
                              font-mono tabular-nums transition-colors"
                 >
                   {t}
@@ -90,8 +90,8 @@ export function HomePage() {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-slate-500">
-              Your recently-viewed tickers will appear here. Use the search in the header (press <kbd className="px-1 bg-slate-800 rounded">/</kbd>) or pick a ticker from the data pages.
+            <p className="text-sm text-stone-500 dark:text-slate-500">
+              Your recently-viewed tickers will appear here. Use the search in the header (press <kbd className="px-1 bg-stone-100 dark:bg-slate-800 rounded">/</kbd>) or pick a ticker from the data pages.
             </p>
           )}
         </div>
@@ -99,22 +99,22 @@ export function HomePage() {
         {/* ─── Learn link ─── */}
         <Link
           to="/learn"
-          className="flex items-center gap-3 card-lg border-slate-800 hover:border-slate-700 transition-colors mb-8"
+          className="flex items-center gap-3 card-lg border-stone-200 dark:border-slate-800 hover:border-stone-300 hover:dark:border-slate-700 transition-colors mb-8"
         >
-          <BookOpen className="w-5 h-5 text-indigo-400" />
+          <BookOpen className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
           <div className="flex-1">
-            <p className="font-semibold text-slate-100">New to this dashboard?</p>
-            <p className="text-sm text-slate-400">
+            <p className="font-semibold text-stone-900 dark:text-slate-100">New to this dashboard?</p>
+            <p className="text-sm text-stone-600 dark:text-slate-400">
               Read the Learn page for indicator deep-dives, drawdown methodology, and put-option fundamentals.
             </p>
           </div>
-          <ArrowRight className="w-4 h-4 text-slate-500" />
+          <ArrowRight className="w-4 h-4 text-stone-500 dark:text-slate-500" />
         </Link>
 
         {/* ─── Disclaimer ─── */}
         <div className="warning-box">
           <p className="text-sm">
-            <strong className="text-amber-400">Disclaimer:</strong> This dashboard is for educational
+            <strong className="text-amber-700 dark:text-amber-400">Disclaimer:</strong> This dashboard is for educational
             purposes only. Options trading involves significant risk. Past performance does not guarantee
             future results. Always do your own research and consider consulting a financial professional.
           </p>

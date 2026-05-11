@@ -13,10 +13,10 @@ export function CardLg({ children, className = '' }) {
 export function MetricCard({ label, value, delta, deltaType, className = '' }) {
   const deltaColor =
     deltaType === 'positive'
-      ? 'text-emerald-400'
+      ? 'text-emerald-700 dark:text-emerald-400'
       : deltaType === 'negative'
-        ? 'text-red-400'
-        : 'text-slate-400';
+        ? 'text-red-700 dark:text-red-400'
+        : 'text-stone-600 dark:text-slate-400';
 
   return (
     <div className={`metric-card ${className}`}>

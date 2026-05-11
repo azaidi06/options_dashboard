@@ -10,7 +10,7 @@ export default function AppSwitcher() {
   return (
     <nav
       aria-label="Sibling apps"
-      className="flex items-center gap-1 rounded-full border border-slate-700/60 bg-slate-900/60 backdrop-blur px-1 py-1"
+      className="flex items-center gap-1 rounded-full border border-stone-300/60 dark:border-slate-700/60 bg-white/60 dark:bg-slate-900/60 backdrop-blur px-1 py-1"
     >
       {APPS.map((app) => {
         const active = app.id === CURRENT;
@@ -22,8 +22,8 @@ export default function AppSwitcher() {
             className={
               "px-3 py-1 text-xs font-medium rounded-full transition-colors " +
               (active
-                ? "bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-500/40"
-                : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40")
+                ? "bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500/40"
+                : "text-stone-600 dark:text-slate-400 hover:text-stone-800 hover:dark:text-slate-200 hover:bg-stone-100/40 hover:dark:bg-slate-800/40")
             }
           >
             {app.label}

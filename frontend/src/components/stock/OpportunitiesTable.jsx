@@ -15,7 +15,7 @@ export function OpportunitiesTable({
     return (
       <div className="flex items-center justify-center py-12">
         <div className="spinner-lg" />
-        <span className="ml-3 text-slate-400 text-sm">Loading opportunities...</span>
+        <span className="ml-3 text-stone-600 dark:text-slate-400 text-sm">Loading opportunities...</span>
       </div>
     );
   }
@@ -23,23 +23,23 @@ export function OpportunitiesTable({
   if (opportunities.error) {
     return (
       <div className="error-box">
-        <p className="text-slate-300">Error loading opportunities: {opportunities.error}</p>
+        <p className="text-stone-700 dark:text-slate-300">Error loading opportunities: {opportunities.error}</p>
       </div>
     );
   }
 
   if (!opportunities.data) {
-    return <div className="text-slate-500 text-center py-8">No opportunity data available</div>;
+    return <div className="text-stone-500 dark:text-slate-500 text-center py-8">No opportunity data available</div>;
   }
 
   const { windows, stats } = opportunities.data;
 
   return (
     <div>
-      <h3 className="text-base font-semibold mb-2 text-slate-200">
+      <h3 className="text-base font-semibold mb-2 text-stone-800 dark:text-slate-200">
         {ticker} Opportunity Windows
       </h3>
-      <p className="text-sm text-slate-400 mb-6">
+      <p className="text-sm text-stone-600 dark:text-slate-400 mb-6">
         Periods when the stock dropped below your entry threshold — potential put option opportunities.
       </p>
 
@@ -62,7 +62,7 @@ export function OpportunitiesTable({
 
       {/* Threshold filters */}
       <CardLg className="mb-6">
-        <h4 className="text-sm font-semibold mb-4 text-slate-300">Adjust Thresholds</h4>
+        <h4 className="text-sm font-semibold mb-4 text-stone-700 dark:text-slate-300">Adjust Thresholds</h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Input
@@ -74,7 +74,7 @@ export function OpportunitiesTable({
               min="0"
               max="50"
             />
-            <p className="text-xs text-slate-500 mt-1">Enter window when drawdown exceeds this</p>
+            <p className="text-xs text-stone-500 dark:text-slate-500 mt-1">Enter window when drawdown exceeds this</p>
           </div>
           <div>
             <Input
@@ -86,16 +86,16 @@ export function OpportunitiesTable({
               min="0"
               max="50"
             />
-            <p className="text-xs text-slate-500 mt-1">Exit window when recovery exceeds this</p>
+            <p className="text-xs text-stone-500 dark:text-slate-500 mt-1">Exit window when recovery exceeds this</p>
           </div>
         </div>
       </CardLg>
 
       {/* Windows table */}
       <CardLg>
-        <h4 className="text-sm font-semibold mb-4 text-slate-300">Opportunity Windows</h4>
+        <h4 className="text-sm font-semibold mb-4 text-stone-700 dark:text-slate-300">Opportunity Windows</h4>
         {windows.length === 0 ? (
-          <p className="text-slate-500 text-center py-8">
+          <p className="text-stone-500 dark:text-slate-500 text-center py-8">
             No opportunity windows found with current thresholds
           </p>
         ) : (
@@ -121,13 +121,13 @@ export function OpportunitiesTable({
                       )}
                     </td>
                     <td className="font-medium tabular-nums">{window.duration_days} days</td>
-                    <td className="text-amber-400 tabular-nums">
+                    <td className="text-amber-700 dark:text-amber-400 tabular-nums">
                       {(window.entry_drawdown * 100).toFixed(1)}%
                     </td>
-                    <td className="text-red-400 font-semibold tabular-nums">
+                    <td className="text-red-700 dark:text-red-400 font-semibold tabular-nums">
                       {(window.max_drawdown * 100).toFixed(1)}%
                     </td>
-                    <td className="text-emerald-400 tabular-nums">
+                    <td className="text-emerald-700 dark:text-emerald-400 tabular-nums">
                       {window.exit_drawdown
                         ? `${(window.exit_drawdown * 100).toFixed(1)}%`
                         : '\u2014'}
@@ -142,8 +142,8 @@ export function OpportunitiesTable({
 
       {/* Note */}
       <div className="info-box mt-6">
-        <p className="text-sm text-slate-300">
-          <strong className="text-slate-100">How to use:</strong> These windows show historical periods
+        <p className="text-sm text-stone-700 dark:text-slate-300">
+          <strong className="text-stone-900 dark:text-slate-100">How to use:</strong> These windows show historical periods
           when the stock was significantly down from its recent high. Put options would have been
           valuable defensively during these drawdowns.
         </p>

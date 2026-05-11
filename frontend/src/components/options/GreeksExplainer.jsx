@@ -1,17 +1,18 @@
 /**
- * Greeks Explainer - dark theme
+ * Greeks Explainer
  */
 import { CardLg } from '../common/Card';
-
-const GREEK_COLORS = {
-  blue: { border: '#818cf8', text: 'text-blue-400', bg: 'bg-blue-500/10' },
-  purple: { border: '#a78bfa', text: 'text-purple-400', bg: 'bg-purple-500/10' },
-  orange: { border: '#f59e0b', text: 'text-amber-400', bg: 'bg-amber-500/10' },
-  green: { border: '#10b981', text: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-  indigo: { border: '#6366f1', text: 'text-indigo-400', bg: 'bg-indigo-500/10' },
-};
+import { useTheme } from '../../theme/ThemeContext';
 
 export function GreeksExplainer() {
+  const t = useTheme().tokens;
+  const GREEK_COLORS = {
+    blue:   { border: t.indigo,       text: 'text-blue-700 dark:text-blue-400',     bg: 'bg-blue-100 dark:bg-blue-500/10' },
+    purple: { border: t.cat7,         text: 'text-purple-700 dark:text-purple-400', bg: 'bg-purple-100 dark:bg-purple-500/10' },
+    orange: { border: t.warning,      text: 'text-amber-700 dark:text-amber-400',   bg: 'bg-amber-100 dark:bg-amber-500/10' },
+    green:  { border: t.positive,     text: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-100 dark:bg-emerald-500/10' },
+    indigo: { border: t.indigoStrong, text: 'text-indigo-700 dark:text-indigo-400', bg: 'bg-indigo-100 dark:bg-indigo-500/10' },
+  };
   const greeks = [
     {
       name: 'Delta (Δ)', symbol: 'Δ', color: 'blue',
@@ -81,17 +82,17 @@ export function GreeksExplainer() {
 
   return (
     <div>
-      <h3 className="text-base font-semibold mb-4 text-slate-200">Options Greeks Guide</h3>
+      <h3 className="text-base font-semibold mb-4 text-stone-800 dark:text-slate-200">Options Greeks Guide</h3>
 
       <div className="info-box mb-6">
-        <h4 className="text-sm font-semibold mb-2 text-slate-100">What are the Greeks?</h4>
-        <p className="text-sm text-slate-300">
+        <h4 className="text-sm font-semibold mb-2 text-stone-900 dark:text-slate-100">What are the Greeks?</h4>
+        <p className="text-sm text-stone-700 dark:text-slate-300">
           Mathematical measures of how option prices change in response to different factors.
           Think of them as your option's sensitivity dials.
         </p>
-        <p className="text-sm text-slate-400 mt-2">
-          <strong className="text-slate-300">Direction note:</strong> Delta is <strong className="text-emerald-400">positive</strong> for long calls
-          (range 0.0 → +1.0) and <strong className="text-red-400">negative</strong> for long puts (range -1.0 → 0.0). Gamma, vega, and (long) theta
+        <p className="text-sm text-stone-600 dark:text-slate-400 mt-2">
+          <strong className="text-stone-700 dark:text-slate-300">Direction note:</strong> Delta is <strong className="text-emerald-700 dark:text-emerald-400">positive</strong> for long calls
+          (range 0.0 → +1.0) and <strong className="text-red-700 dark:text-red-400">negative</strong> for long puts (range -1.0 → 0.0). Gamma, vega, and (long) theta
           behave the same way regardless of direction.
         </p>
       </div>
@@ -107,33 +108,33 @@ export function GreeksExplainer() {
             >
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h4 className="text-base font-bold text-slate-100">{greek.name}</h4>
-                  <p className="text-sm text-slate-400 mt-1">{greek.description}</p>
+                  <h4 className="text-base font-bold text-stone-900 dark:text-slate-100">{greek.name}</h4>
+                  <p className="text-sm text-stone-600 dark:text-slate-400 mt-1">{greek.description}</p>
                 </div>
                 <div className={`text-3xl font-bold ${colors.text}`}>{greek.symbol}</div>
               </div>
 
               <div className="mt-4 space-y-3">
                 <div>
-                  <h5 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Key Points</h5>
-                  <ul className="text-sm text-slate-300 space-y-1">
+                  <h5 className="text-xs font-semibold text-stone-600 dark:text-slate-400 uppercase tracking-wider mb-2">Key Points</h5>
+                  <ul className="text-sm text-stone-700 dark:text-slate-300 space-y-1">
                     {greek.details.map((detail, i) => (
                       <li key={i} className="flex gap-2">
-                        <span className="text-slate-600 flex-shrink-0">•</span>
+                        <span className="text-stone-400 dark:text-slate-600 flex-shrink-0">•</span>
                         <span>{detail}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
 
-                <div className="bg-slate-800/50 p-3 rounded-lg border border-slate-700/50">
-                  <h5 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Example</h5>
-                  <p className="text-sm text-slate-300 font-mono">{greek.example}</p>
+                <div className="bg-stone-100/50 dark:bg-slate-800/50 p-3 rounded-lg border border-stone-300/50 dark:border-slate-700/50">
+                  <h5 className="text-xs font-semibold text-stone-600 dark:text-slate-400 uppercase tracking-wider mb-1">Example</h5>
+                  <p className="text-sm text-stone-700 dark:text-slate-300 font-mono">{greek.example}</p>
                 </div>
 
-                <div className={`${colors.bg} p-3 rounded-lg border border-slate-700/30`}>
-                  <h5 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Why it matters</h5>
-                  <p className="text-sm text-slate-300">{greek.use}</p>
+                <div className={`${colors.bg} p-3 rounded-lg border border-stone-300/30 dark:border-slate-700/30`}>
+                  <h5 className="text-xs font-semibold text-stone-600 dark:text-slate-400 uppercase tracking-wider mb-1">Why it matters</h5>
+                  <p className="text-sm text-stone-700 dark:text-slate-300">{greek.use}</p>
                 </div>
               </div>
             </CardLg>
@@ -143,7 +144,7 @@ export function GreeksExplainer() {
 
       {/* Quick Reference Table */}
       <CardLg>
-        <h4 className="text-sm font-semibold mb-4 text-slate-300">Quick Reference: Moneyness Impact</h4>
+        <h4 className="text-sm font-semibold mb-4 text-stone-700 dark:text-slate-300">Quick Reference: Moneyness Impact</h4>
         <div className="overflow-x-auto">
           <table className="data-table">
             <thead>
@@ -156,27 +157,27 @@ export function GreeksExplainer() {
             </thead>
             <tbody>
               <tr>
-                <td className="font-semibold text-slate-200">Delta</td>
-                <td className="text-emerald-400 font-mono">-0.8 to -1.0</td>
-                <td className="text-amber-400 font-mono">-0.4 to -0.6</td>
-                <td className="text-red-400 font-mono">-0.0 to -0.3</td>
+                <td className="font-semibold text-stone-800 dark:text-slate-200">Delta</td>
+                <td className="text-emerald-700 dark:text-emerald-400 font-mono">-0.8 to -1.0</td>
+                <td className="text-amber-700 dark:text-amber-400 font-mono">-0.4 to -0.6</td>
+                <td className="text-red-700 dark:text-red-400 font-mono">-0.0 to -0.3</td>
               </tr>
               <tr>
-                <td className="font-semibold text-slate-200">Gamma</td>
+                <td className="font-semibold text-stone-800 dark:text-slate-200">Gamma</td>
                 <td>Low</td>
-                <td className="font-bold text-slate-100">Highest</td>
+                <td className="font-bold text-stone-900 dark:text-slate-100">Highest</td>
                 <td>Low</td>
               </tr>
               <tr>
-                <td className="font-semibold text-slate-200">Theta</td>
+                <td className="font-semibold text-stone-800 dark:text-slate-200">Theta</td>
                 <td>Moderate</td>
-                <td className="font-bold text-slate-100">Highest (decay)</td>
+                <td className="font-bold text-stone-900 dark:text-slate-100">Highest (decay)</td>
                 <td>Fast (to zero)</td>
               </tr>
               <tr>
-                <td className="font-semibold text-slate-200">Vega</td>
+                <td className="font-semibold text-stone-800 dark:text-slate-200">Vega</td>
                 <td>Moderate</td>
-                <td className="font-bold text-slate-100">Highest</td>
+                <td className="font-bold text-stone-900 dark:text-slate-100">Highest</td>
                 <td>Low</td>
               </tr>
             </tbody>
@@ -184,8 +185,8 @@ export function GreeksExplainer() {
         </div>
 
         <div className="info-box mt-4">
-          <p className="text-sm text-slate-300">
-            <strong className="text-slate-100">Key Insight:</strong> ATM options are most sensitive to
+          <p className="text-sm text-stone-700 dark:text-slate-300">
+            <strong className="text-stone-900 dark:text-slate-100">Key Insight:</strong> ATM options are most sensitive to
             everything: largest gamma, largest theta decay, and largest vega. This makes ATM options
             riskier but with more opportunity.
           </p>

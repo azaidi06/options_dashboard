@@ -16,6 +16,7 @@ import {
 } from 'recharts';
 import { CardLg, MetricCard } from '../common/Card';
 import { formatPercent, formatCurrency, formatGreek } from '../../utils/formatters';
+import { useTheme } from '../../theme/ThemeContext';
 
 function percentile(sorted, p) {
   if (!sorted.length) return 0;
@@ -31,25 +32,26 @@ function IVSmileTooltip({ active, payload, label }) {
   const row = payload[0]?.payload;
   if (!row) return null;
   return (
-    <div className="bg-slate-900/95 backdrop-blur border border-slate-700 rounded-lg shadow-xl px-3 py-2 text-xs">
-      <div className="font-semibold text-slate-100 mb-1 tabular-nums">
+    <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur border border-stone-300 dark:border-slate-700 rounded-lg shadow-xl px-3 py-2 text-xs">
+      <div className="font-semibold text-stone-900 dark:text-slate-100 mb-1 tabular-nums">
         Strike {formatCurrency(row.strike, 2)}
       </div>
-      <div className="text-slate-300 tabular-nums">
+      <div className="text-stone-700 dark:text-slate-300 tabular-nums">
         IV: {formatPercent(row.iv_percent, 2)}
-        {row.is_outlier ? <span className="text-amber-400"> (outlier)</span> : null}
+        {row.is_outlier ? <span className="text-amber-700 dark:text-amber-400"> (outlier)</span> : null}
       </div>
       {row.delta != null && (
-        <div className="text-slate-400 tabular-nums">Delta: {formatGreek(row.delta, 'delta')}</div>
+        <div className="text-stone-600 dark:text-slate-400 tabular-nums">Delta: {formatGreek(row.delta, 'delta')}</div>
       )}
     </div>
   );
 }
 
 export function IVSmileChart({ ticker, ivSmileData }) {
+  const t = useTheme().tokens;
   if (!ivSmileData || !ivSmileData.data || ivSmileData.data.length === 0) {
     return (
-      <div className="text-slate-500 text-center py-8">No IV smile data available</div>
+      <div className="text-stone-500 dark:text-slate-500 text-center py-8">No IV smile data available</div>
     );
   }
 
@@ -95,55 +97,55 @@ export function IVSmileChart({ ticker, ivSmileData }) {
 
   return (
     <div>
-      <h3 className="text-base font-semibold mb-4 text-slate-200">{ticker} IV Smile</h3>
+      <h3 className="text-base font-semibold mb-4 text-stone-800 dark:text-slate-200">{ticker} IV Smile</h3>
 
       <CardLg className="mb-6">
-        <p className="text-sm text-slate-400 mb-2">
+        <p className="text-sm text-stone-600 dark:text-slate-400 mb-2">
           The IV Smile shows how implied volatility varies across different strike prices.
           A &quot;smile&quot; pattern indicates higher volatility at out-of-the-money strikes.
         </p>
         {outlierCount > 0 && (
-          <p className="text-xs text-amber-400 mb-3">
+          <p className="text-xs text-amber-700 dark:text-amber-400 mb-3">
             {outlierCount} outlier{outlierCount === 1 ? '' : 's'} above the {cap.toFixed(0)}% cap rendered as dots at the top of the chart.
           </p>
         )}
 
         <ResponsiveContainer width="100%" height={300}>
           <ComposedChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+            <CartesianGrid strokeDasharray="3 3" stroke={t.surfaceElev} />
             <XAxis
               dataKey="strike"
-              tick={{ fontSize: 11, fill: '#94a3b8' }}
-              stroke="#334155"
+              tick={{ fontSize: 11, fill: t.textMute }}
+              stroke={t.border}
               tickFormatter={(v) => `$${Number(v).toFixed(0)}`}
             />
             <YAxis
-              label={{ value: 'IV %', angle: -90, position: 'insideLeft', fill: '#94a3b8' }}
-              tick={{ fontSize: 11, fill: '#94a3b8' }}
-              stroke="#334155"
+              label={{ value: 'IV %', angle: -90, position: 'insideLeft', fill: t.textMute }}
+              tick={{ fontSize: 11, fill: t.textMute }}
+              stroke={t.border}
               domain={[0, yMax]}
               allowDataOverflow={true}
               tickFormatter={(v) => `${Number(v).toFixed(0)}%`}
             />
             <Tooltip content={<IVSmileTooltip />} />
-            <Legend wrapperStyle={{ color: '#94a3b8' }} />
+            <Legend wrapperStyle={{ color: t.textMute }} />
             <ReferenceLine
               y={cap}
-              stroke="#f59e0b"
+              stroke={t.warning}
               strokeDasharray="4 4"
               label={{
                 value: `95th pct: ${cap.toFixed(0)}%`,
                 position: 'right',
-                fill: '#f59e0b',
+                fill: t.warning,
                 fontSize: 10,
               }}
             />
             <Line
               type="monotone"
               dataKey="iv_line"
-              stroke="#818cf8"
-              dot={{ fill: '#818cf8', r: 3 }}
-              activeDot={{ r: 5, fill: '#a5b4fc' }}
+              stroke={t.indigo}
+              dot={{ fill: t.indigo, r: 3 }}
+              activeDot={{ r: 5, fill: t.indigoFaint }}
               name="Implied Volatility"
               isAnimationActive={false}
               strokeWidth={2}
@@ -151,7 +153,7 @@ export function IVSmileChart({ ticker, ivSmileData }) {
             />
             <Scatter
               dataKey="iv_outlier"
-              fill="#f59e0b"
+              fill={t.warning}
               name="Outlier (> cap)"
               isAnimationActive={false}
               shape="circle"
@@ -177,8 +179,8 @@ export function IVSmileChart({ ticker, ivSmileData }) {
       </div>
 
       <div className="info-box">
-        <p className="text-sm text-slate-300">
-          <strong className="text-slate-100">What it means:</strong> Higher IV at out-of-the-money
+        <p className="text-sm text-stone-700 dark:text-slate-300">
+          <strong className="text-stone-900 dark:text-slate-100">What it means:</strong> Higher IV at out-of-the-money
           puts (lower strikes) suggests the market expects larger downside moves. The chart drops
           rows where IV is missing or above 200% (typically 1-day options where the IV solver
           fails); the Y-axis is capped at the 95th percentile of valid values.
