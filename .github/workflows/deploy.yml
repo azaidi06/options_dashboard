@@ -105,11 +105,12 @@ jobs:
 
             echo "Deploy complete at $(date)"
 
-      # ── Install daily fetch cron (uses daily_options_update.sh) ──────────
-      # Per-ticker smart fill: each night reads the parquet's lastDate and
-      # fetches forward to today, capped at 90 trading days/run. Steady-
-      # state cost: 1 AV call/ticker/night. Stale tickers recover gradually
-      # over multiple nights.
+      # ── Install daily fetch cron (uses daily_options_update_slim.sh) ─────
+      # Slim variant: fetches missing per-day option chains via fetch_and_save
+      # and streaming-appends them onto the consolidated parquet. Avoids the
+      # print_status/merge_all_data OOM that broke the old script on mega-cap
+      # tickers (4000+ parquet files vs 1.9 GB RAM). 6 UTC = 1 AM ET on
+      # weekdays — picks up previous trading day after AV's overnight settle.
       - name: Install daily fetch cron
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -118,17 +119,15 @@ jobs:
           key: ${{ secrets.EC2_DEPLOY_KEY }}
           script: |
             mkdir -p /home/ubuntu/options_dashboard/logs
-            chmod +x /home/ubuntu/options_dashboard/daily_options_update.sh
+            chmod +x /home/ubuntu/options_dashboard/daily_options_update_slim.sh
 
-            # Replace any prior cron entry; install the new one. 6 UTC = 1 AM
-            # ET on weekdays — picks up previous trading day after AV's
-            # overnight settlement.
+            # Replace any prior cron entry; install the slim one.
             (
               crontab -l 2>/dev/null | grep -v 'daily_options_update\|fetch_daily' || true
-              echo "0 6 * * 1-5 /home/ubuntu/options_dashboard/daily_options_update.sh >> /home/ubuntu/options_dashboard/logs/cron.log 2>&1"
+              echo "0 6 * * 1-5 /home/ubuntu/options_dashboard/daily_options_update_slim.sh >> /home/ubuntu/options_dashboard/logs/cron.log 2>&1"
             ) | crontab -
 
-            # Remove the obsolete fetch_daily.sh (predecessor)
+            # Remove obsolete predecessor scripts
             rm -f /home/ubuntu/options_dashboard/fetch_daily.sh
 
             echo "Cron installed:"
