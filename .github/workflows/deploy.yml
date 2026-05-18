@@ -70,8 +70,9 @@ jobs:
 
             venv/bin/pip install -r requirements.txt -q
 
-            # Sync the systemd unit file (picks up EnvironmentFile changes)
+            # Sync both systemd unit files (picks up EnvironmentFile + Restart= changes)
             sudo cp options-dashboard-api.service /etc/systemd/system/options-dashboard-api.service
+            sudo cp options-dashboard-nginx.service /etc/systemd/system/options-dashboard-nginx.service
             sudo systemctl daemon-reload
             sudo systemctl restart options-dashboard-api
 

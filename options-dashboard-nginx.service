@@ -13,6 +13,8 @@ ExecStartPre=/bin/sh -c 'ln -sf /etc/nginx/sites-available/options-dashboard /et
 ExecStart=/usr/sbin/nginx -c /etc/nginx/nginx.conf
 ExecReload=/bin/kill -s HUP $MAINPID
 ExecStop=/bin/kill -s QUIT $MAINPID
+Restart=always
+RestartSec=5
 PrivateTmp=true
 
 [Install]
