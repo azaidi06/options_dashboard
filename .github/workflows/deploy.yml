@@ -120,15 +120,19 @@ jobs:
           script: |
             mkdir -p /home/ubuntu/options_dashboard/logs
             chmod +x /home/ubuntu/options_dashboard/daily_options_update_slim.sh
+            chmod +x /home/ubuntu/options_dashboard/weekly_compact_consolidated.sh
 
-            # Replace any prior cron entry; install the slim one.
+            # Replace any prior options-related cron entries; install the
+            # slim daily updater + weekly compact pass.
             (
-              crontab -l 2>/dev/null | grep -v 'daily_options_update\|fetch_daily' || true
+              crontab -l 2>/dev/null \
+                | grep -v 'daily_options_update\|fetch_daily\|weekly_compact_consolidated' || true
               echo "0 6 * * 1-5 /home/ubuntu/options_dashboard/daily_options_update_slim.sh >> /home/ubuntu/options_dashboard/logs/cron.log 2>&1"
+              echo "0 7 * * 0 /home/ubuntu/options_dashboard/weekly_compact_consolidated.sh >> /home/ubuntu/options_dashboard/logs/cron.log 2>&1"
             ) | crontab -
 
             # Remove obsolete predecessor scripts
             rm -f /home/ubuntu/options_dashboard/fetch_daily.sh
 
             echo "Cron installed:"
-            crontab -l | grep daily_options_update || echo "  (no entry)"
+            crontab -l | grep -E 'daily_options_update|weekly_compact_consolidated' || echo "  (no entry)"
